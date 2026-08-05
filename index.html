@@ -1,1002 +1,787 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Magic Math</title>
-    <style>
-        /* ==========================================================================
-           CSS VARIABLES & RESET
-           ========================================================================== */
-        :root {
-            --primary-purple: #8e44ad;
-            --dark-purple: #2c1654;
-            --pink: #e84393;
-            --blue: #0984e3;
-            --sky-blue: #00cec9;
-            --gold: #fdcb6e;
-            --soft-white: #f5f6fa;
-            --success: #00b894;
-            --danger: #d63031;
-            --warning: #feca57;
-            
-            --glass-bg: rgba(255, 255, 255, 0.15);
-            --glass-border: rgba(255, 255, 255, 0.25);
-            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Magic Math: Educational RPG</title>
+<style>
+    /* ----- CORE VARIABLES & RESET ----- */
+    :root {
+        --bg-color: #0f0c29;
+        --panel-bg: rgba(30, 27, 75, 0.85);
+        --primary: #8b5cf6;
+        --primary-hover: #7c3aed;
+        --secondary: #ec4899;
+        --accent: #f59e0b;
+        --text: #f8fafc;
+        --text-muted: #cbd5e1;
+        --hp-color: #ef4444;
+        --mp-color: #3b82f6;
+        --correct: #10b981;
+        --wrong: #f43f5e;
+        --font-main: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
 
-        body, html {
-            width: 100%;
-            min-height: 100vh;
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(-45deg, #1a0b2e, #4b1d52, #192a56, #273c75);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
-            color: var(--soft-white);
-            overflow-x: hidden;
-        }
+    body {
+        background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+        color: var(--text);
+        font-family: var(--font-main);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        width: 100vw;
+        overflow: hidden;
+        touch-action: none;
+    }
 
-        /* ==========================================================================
-           ANIMATIONS
-           ========================================================================== */
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
+    /* ----- LAYOUT ----- */
+    #app {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        max-width: 1280px;
+        background: radial-gradient(circle at center, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+        box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
+    @media (min-aspect-ratio: 16/9) and (min-width: 1024px) {
+        #app { height: 100vh; max-height: 720px; aspect-ratio: 16/9; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
+    }
 
-        @keyframes particleRise {
-            0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
-            10% { opacity: 0.8; }
-            90% { opacity: 0.5; }
-            100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
-        }
+    .screen {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        padding: clamp(10px, 2vh, 20px);
+        position: absolute;
+        top: 0; left: 0;
+        z-index: 10;
+        animation: fadeIn 0.4s ease;
+    }
+    .screen.active { display: flex; }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
+    /* ----- UI COMPONENTS ----- */
+    h1, h2, h3 { font-weight: 800; text-align: center; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+    h1 { font-size: clamp(2rem, 5vw, 4rem); color: var(--accent); letter-spacing: 2px; }
+    h2 { font-size: clamp(1.5rem, 4vw, 2.5rem); color: var(--primary); }
+    
+    .panel {
+        background: var(--panel-bg);
+        border: 2px solid rgba(139, 92, 246, 0.4);
+        border-radius: 16px;
+        padding: clamp(15px, 3vw, 30px);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        backdrop-filter: blur(8px);
+    }
 
-        @keyframes pop {
-            0% { transform: scale(0.8); opacity: 0; }
-            80% { transform: scale(1.1); }
-            100% { transform: scale(1); opacity: 1; }
-        }
+    .btn {
+        background: linear-gradient(180deg, var(--primary), var(--primary-hover));
+        color: white;
+        border: 2px solid rgba(255,255,255,0.2);
+        border-radius: 12px;
+        padding: clamp(12px, 2vh, 20px) clamp(20px, 4vw, 40px);
+        font-size: clamp(1rem, 2.5vw, 1.5rem);
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.1s, box-shadow 0.2s, background 0.2s;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        box-shadow: 0 4px 0 rgba(0,0,0,0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+    .btn:active { transform: translateY(4px); box-shadow: 0 0 0 rgba(0,0,0,0.4); }
+    .btn:disabled { filter: grayscale(1); opacity: 0.5; pointer-events: none; }
+    .btn.secondary { background: linear-gradient(180deg, #475569, #334155); }
 
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-5px); }
-            40%, 80% { transform: translateX(5px); }
-        }
+    /* ----- PROGRESS BARS ----- */
+    .stat-bar-container {
+        width: 100%;
+        background: #1e293b;
+        border: 2px solid #0f172a;
+        border-radius: 8px;
+        height: clamp(16px, 3vh, 24px);
+        position: relative;
+        overflow: hidden;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .stat-bar {
+        height: 100%;
+        width: 100%;
+        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+    }
+    .stat-bar::after {
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 30%;
+        background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 100%);
+    }
+    .hp-fill { background: linear-gradient(90deg, #b91c1c, var(--hp-color)); }
+    .mp-fill { background: linear-gradient(90deg, #1d4ed8, var(--mp-color)); }
+    .xp-fill { background: linear-gradient(90deg, #047857, var(--correct)); }
+    .timer-fill { background: linear-gradient(90deg, var(--accent), #fbbf24); }
 
-        /* ==========================================================================
-           GLOBAL LAYOUT & GLASSMORPHISM
-           ========================================================================== */
-        #app-container {
-            width: min(100%, 1200px);
-            margin: 0 auto;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            z-index: 10;
-            padding: clamp(10px, 3vw, 30px);
-        }
+    .stat-labels {
+        display: flex; justify-content: space-between;
+        font-size: clamp(0.7rem, 2vw, 1rem); font-weight: bold;
+        margin-bottom: 2px; text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    }
 
-        .screen {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            flex: 1;
-            animation: slideIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-        }
+    /* ----- SCREENS ----- */
+    /* Menu & Map */
+    .center-col { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; height: 100%; }
+    
+    .stats-header {
+        display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+        background: rgba(0,0,0,0.4); padding: 10px; border-radius: 12px; width: 100%; text-align: center;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    .stat-box { display: flex; flex-direction: column; font-size: clamp(0.8rem, 2vw, 1.2rem); }
+    .stat-value { color: var(--accent); font-weight: 900; font-size: clamp(1.2rem, 3vw, 1.8rem); }
 
-        .screen.active {
-            display: flex;
-        }
+    .map-grid {
+        display: grid; grid-template-columns: repeat(2, 1fr); gap: clamp(10px, 2vw, 20px);
+        width: 100%; max-width: 800px; flex: 1; align-content: center;
+    }
+    .map-node {
+        background: var(--panel-bg); border: 2px solid var(--primary); border-radius: 16px;
+        padding: 20px 10px; text-align: center; cursor: pointer;
+        transition: transform 0.2s, background 0.2s;
+        display: flex; flex-direction: column; align-items: center; gap: 10px;
+    }
+    .map-node:hover { transform: scale(1.05); background: rgba(139, 92, 246, 0.4); }
+    .map-node .icon { font-size: clamp(2rem, 6vw, 4rem); }
+    .map-node .title { font-weight: bold; font-size: clamp(1rem, 2.5vw, 1.2rem); color: var(--text); }
+    .map-node .desc { font-size: clamp(0.75rem, 2vw, 0.9rem); color: var(--text-muted); }
 
-        .glass-panel {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--glass-shadow);
-            border-radius: 24px;
-            padding: clamp(1.5rem, 4vw, 3rem);
-            width: min(100%, 800px);
-            text-align: center;
-        }
+    /* Combat Screen */
+    #combat-screen { padding: 10px; display: flex; flex-direction: column; gap: 10px; }
+    
+    .hud { display: flex; justify-content: space-between; gap: 10px; }
+    .entity-hud { flex: 1; display: flex; flex-direction: column; gap: 5px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
+    
+    .combat-arena {
+        flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px;
+        position: relative;
+    }
+    
+    .enemy-sprite {
+        font-size: clamp(4rem, 15vh, 8rem);
+        filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+        animation: float 3s ease-in-out infinite;
+        position: relative;
+    }
 
-        /* ==========================================================================
-           BACKGROUND EFFECTS (PARTICLES)
-           ========================================================================== */
-        #particles-bg {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
-            z-index: 1;
-            overflow: hidden;
-        }
+    .math-board {
+        background: #fdf6e3; color: #1e293b; border: 4px solid var(--accent); border-radius: 12px;
+        padding: clamp(10px, 3vw, 20px); width: 100%; max-width: 600px; text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .question-text { font-size: clamp(1.5rem, 5vw, 2.5rem); font-weight: 900; margin: 10px 0; letter-spacing: 1px; }
+    
+    .timer-wrap { margin-bottom: 10px; }
 
-        .particle {
-            position: absolute;
-            bottom: -50px;
-            background: radial-gradient(circle, #fff, transparent);
-            border-radius: 50%;
-            animation: particleRise linear infinite;
-        }
+    .answers-grid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: clamp(10px, 2vw, 15px);
+        width: 100%; max-width: 600px; margin: 0 auto;
+    }
+    .answer-btn {
+        background: var(--panel-bg); color: var(--text); border: 2px solid var(--primary);
+        border-radius: 12px; padding: clamp(15px, 3vh, 25px); font-size: clamp(1.2rem, 4vw, 1.8rem);
+        font-weight: bold; cursor: pointer; transition: all 0.1s;
+        display: flex; justify-content: center; align-items: center;
+    }
+    .answer-btn:active { transform: scale(0.95); }
+    .answer-btn.correct { background: var(--correct); border-color: #059669; }
+    .answer-btn.wrong { background: var(--wrong); border-color: #be123c; }
+    .answer-btn.disabled { opacity: 0.3; pointer-events: none; }
 
-        /* ==========================================================================
-           TYPOGRAPHY & INPUTS
-           ========================================================================== */
-        h1.magic-title {
-            font-size: clamp(2.5rem, 8vw, 5rem);
-            font-weight: 900;
-            background: linear-gradient(to right, #ffeaa7, #fdcb6e, #fab1a0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
-            margin-bottom: 0.5rem;
-            animation: float 4s ease-in-out infinite;
-        }
+    .combat-controls {
+        display: flex; justify-content: space-between; width: 100%; max-width: 600px; margin: 0 auto; gap: 10px;
+    }
+    .tool-btn {
+        flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: bold; color: white; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 5px; font-size: clamp(0.8rem, 2.5vw, 1rem);
+    }
+    .hint-btn { background: var(--mp-color); }
+    .flee-btn { background: #64748b; }
 
-        .subtitle {
-            font-size: clamp(1rem, 3vw, 1.5rem);
-            color: var(--sky-blue);
-            margin-bottom: 2rem;
-            font-weight: 600;
-        }
+    /* Overlay (Explanations) */
+    .overlay {
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.85); backdrop-filter: blur(4px);
+        display: none; flex-direction: column; justify-content: center; align-items: center;
+        z-index: 100; padding: 20px; text-align: center;
+    }
+    .overlay.active { display: flex; animation: fadeIn 0.2s; }
+    .dialog-box {
+        background: var(--panel-bg); border: 2px solid var(--primary); border-radius: 16px;
+        padding: 30px; max-width: 500px; width: 100%;
+    }
+    .dialog-title { font-size: 1.5rem; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px;}
+    .dialog-text { font-size: 1.2rem; margin-bottom: 25px; line-height: 1.5; color: var(--text-muted); }
 
-        input[type="text"] {
-            width: min(100%, 350px);
-            padding: 1rem 1.5rem;
-            font-size: 1.2rem;
-            border: 2px solid var(--sky-blue);
-            border-radius: 50px;
-            background: rgba(255,255,255,0.1);
-            color: white;
-            outline: none;
-            text-align: center;
-            margin-bottom: 1.5rem;
-            transition: all 0.3s;
-        }
-        
-        input[type="text"]:focus {
-            background: rgba(255,255,255,0.2);
-            border-color: var(--gold);
-            box-shadow: 0 0 15px var(--gold);
-        }
-        
-        input[type="text"]::placeholder {
-            color: rgba(255,255,255,0.6);
-        }
+    /* Damage Texts & Particles */
+    .dmg-text {
+        position: absolute; font-weight: 900; font-size: 2rem; pointer-events: none;
+        animation: floatUp 1s ease-out forwards; text-shadow: 0 0 4px #000;
+    }
 
-        /* ==========================================================================
-           BUTTONS
-           ========================================================================== */
-        .btn {
-            background: linear-gradient(135deg, var(--pink), var(--primary-purple));
-            color: white;
-            border: none;
-            padding: clamp(12px, 3vw, 18px) clamp(24px, 5vw, 40px);
-            font-size: clamp(1.2rem, 3vw, 1.5rem);
-            font-weight: bold;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            transition: transform 0.2s, box-shadow 0.2s;
-            min-height: 56px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
+    /* Animations */
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+    @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-50px) scale(1.5); } }
 
-        .btn:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 25px rgba(232, 67, 147, 0.5);
-        }
-        
-        .btn:active {
-            transform: translateY(1px);
-        }
-
-        .btn.gold {
-            background: linear-gradient(135deg, #f1c40f, #e67e22);
-        }
-
-        /* ==========================================================================
-           GAME HUD
-           ========================================================================== */
-        #hud {
-            width: 100%;
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border: 1px solid var(--glass-border);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .hud-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .hud-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: clamp(0.9rem, 2.5vw, 1.2rem);
-            font-weight: bold;
-            background: rgba(0,0,0,0.2);
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-        }
-
-        .hearts { color: #ff4757; font-size: 1.2rem; }
-        .coins-icon { color: var(--gold); }
-        .combo-text { color: var(--sky-blue); font-style: italic; }
-
-        .energy-bar-container {
-            width: 100%;
-            height: 12px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 6px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        #energy-bar {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, var(--sky-blue), var(--pink));
-            transition: width 0.3s ease;
-        }
-
-        @media (min-width: 768px) {
-            #hud {
-                flex-direction: row;
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 15px;
-            }
-            .hud-row { flex-wrap: nowrap; }
-            .energy-bar-container { width: 100%; }
-        }
-
-        /* ==========================================================================
-           GAMEPLAY AREA
-           ========================================================================== */
-        .question-card {
-            width: 100%;
-            margin-bottom: 1.5rem;
-        }
-        
-        .meta-info {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 1rem;
-            font-size: clamp(0.8rem, 2vw, 1rem);
-        }
-
-        .tag {
-            background: rgba(255,255,255,0.2);
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-weight: bold;
-        }
-
-        .diff-Easy { color: #7bed9f; }
-        .diff-Medium { color: #eccc68; }
-        .diff-Hard { color: #ff7f50; }
-
-        .question-text {
-            font-size: clamp(1.5rem, 4vw, 2.5rem);
-            font-weight: 700;
-            line-height: 1.3;
-            margin-bottom: 1rem;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-
-        /* TIMER */
-        #timer-container {
-            width: 100%;
-            max-width: 400px;
-            height: 16px;
-            background: rgba(0,0,0,0.4);
-            border-radius: 8px;
-            margin: 0 auto 2rem;
-            overflow: hidden;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
-        }
-
-        #timer-bar {
-            height: 100%;
-            width: 100%;
-            background: var(--success);
-            transition: width 1s linear, background-color 0.3s ease;
-        }
-
-        /* ANSWERS GRID */
-        #answers-grid {
-            width: 100%;
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1rem;
-        }
-
-        @media (min-width: 480px) {
-            #answers-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        .answer-btn {
-            background: rgba(255, 255, 255, 0.15);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 16px;
-            color: white;
-            font-size: clamp(1.1rem, 3vw, 1.4rem);
-            font-weight: 600;
-            min-height: 70px;
-            padding: 1rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(5px);
-        }
-
-        .answer-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.03);
-            border-color: var(--sky-blue);
-        }
-
-        .answer-btn.correct-anim {
-            background: var(--success);
-            border-color: #55efc4;
-            animation: pop 0.4s ease;
-        }
-
-        .answer-btn.wrong-anim {
-            background: var(--danger);
-            border-color: #ff7675;
-            animation: shake 0.4s ease;
-        }
-
-        /* ==========================================================================
-           FEEDBACK MODAL
-           ========================================================================== */
-        #feedback-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            backdrop-filter: blur(5px);
-            padding: 20px;
-        }
-
-        #feedback-overlay.active { display: flex; }
-
-        .feedback-box {
-            background: var(--dark-purple);
-            border: 2px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 2rem;
-            width: min(100%, 500px);
-            text-align: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-            animation: pop 0.4s ease-out;
-        }
-
-        .feedback-title {
-            font-size: clamp(2rem, 5vw, 2.5rem);
-            font-weight: 900;
-            margin-bottom: 1rem;
-        }
-
-        .feedback-title.success { color: var(--success); }
-        .feedback-title.error { color: var(--danger); }
-
-        .feedback-explanation {
-            font-size: 1.1rem;
-            line-height: 1.5;
-            margin-bottom: 1.5rem;
-            background: rgba(255,255,255,0.1);
-            padding: 1rem;
-            border-radius: 12px;
-        }
-
-        /* ==========================================================================
-           RESULT SCREEN
-           ========================================================================== */
-        .result-stat {
-            font-size: clamp(1.2rem, 3vw, 1.8rem);
-            margin: 10px 0;
-            font-weight: bold;
-        }
-        
-        .result-highlight { color: var(--gold); }
-        
-        .rank-badge {
-            display: inline-block;
-            background: linear-gradient(45deg, var(--gold), #e67e22);
-            padding: 10px 25px;
-            border-radius: 30px;
-            font-size: clamp(1.5rem, 4vw, 2rem);
-            font-weight: 900;
-            margin: 20px 0;
-            box-shadow: 0 4px 15px rgba(241, 196, 15, 0.4);
-            animation: pulse 2s infinite;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 2rem;
-        }
-    </style>
+    /* Landscape specific tweaks */
+    @media (orientation: landscape) and (max-height: 600px) {
+        .combat-arena { flex-direction: row; justify-content: space-evenly; }
+        .enemy-sprite { font-size: clamp(3rem, 20vh, 6rem); margin-bottom: 0; }
+        .math-board { max-width: 45%; }
+        .answers-grid { max-width: 45%; }
+    }
+</style>
 </head>
 <body>
 
-    <!-- Background Particles -->
-    <div id="particles-bg"></div>
-
-    <div id="app-container">
+<div id="app">
+    <!-- SCREEN 1: SPLASH / MAIN MENU -->
+    <div id="screen-menu" class="screen active center-col">
+        <h1>MAGIC MATH</h1>
+        <h2 style="color: var(--text-muted); font-size: 1.2rem;">Grade 7 Math RPG</h2>
         
-        <!-- ==================== START SCREEN ==================== -->
-        <div id="start-screen" class="screen active">
-            <h1 class="magic-title"><span>⭐</span> Magic Math <span>⭐</span></h1>
-            <div class="subtitle">The Magic Kingdom Needs Your Math Skills!</div>
-            
-            <div class="glass-panel" style="max-width: 500px;">
-                <input type="text" id="player-name" placeholder="Type your name..." autocomplete="off" maxlength="15">
-                <br>
-                <button class="btn" id="btn-start">✨ Enter Kingdom ✨</button>
+        <div class="panel" style="width: 100%; max-width: 600px;">
+            <div class="stats-header">
+                <div class="stat-box"><span>Level</span><span class="stat-value" id="menu-lvl">1</span></div>
+                <div class="stat-box"><span>Rank</span><span class="stat-value" id="menu-rank" style="font-size: 1rem;">Novice</span></div>
+                <div class="stat-box"><span>Stars</span><span class="stat-value" id="menu-stars">0</span></div>
+                <div class="stat-box"><span>Gold</span><span class="stat-value" id="menu-gold">0</span></div>
             </div>
-            
-            <div style="margin-top: 2rem; font-size: 0.9rem; opacity: 0.7;">
-                <p>Grade 7 Mathematics - RPG Edition</p>
-                <p id="high-score-display"></p>
+            <div style="margin-top: 15px;">
+                <div class="stat-labels"><span>XP to next Level</span><span id="menu-xp-text">0/100</span></div>
+                <div class="stat-bar-container"><div id="menu-xp-bar" class="stat-bar xp-fill" style="width: 0%;"></div></div>
             </div>
         </div>
 
-        <!-- ==================== GAME SCREEN ==================== -->
-        <div id="game-screen" class="screen">
-            
-            <!-- HUD -->
-            <div id="hud">
-                <div class="hud-row">
-                    <div class="hud-item" style="color:var(--gold);">👤 <span id="hud-name">Hero</span></div>
-                    <div class="hud-item hearts" id="hud-lives">❤️❤️❤️</div>
-                </div>
-                <div class="hud-row">
-                    <div class="hud-item">🏆 <span id="hud-score">0</span></div>
-                    <div class="hud-item coins-icon">🪙 <span id="hud-coins">0</span></div>
-                    <div class="hud-item combo-text">🔥 Combo: <span id="hud-combo">0</span></div>
-                    <div class="hud-item">📖 Q: <span id="hud-qnum">1</span>/10</div>
-                </div>
-                <div class="energy-bar-container">
-                    <div id="energy-bar"></div>
-                </div>
-            </div>
-
-            <!-- QUESTION AREA -->
-            <div class="glass-panel question-card">
-                <div class="meta-info">
-                    <span class="tag" id="tag-topic">Algebra</span>
-                    <span class="tag diff-Medium" id="tag-diff">Medium</span>
-                </div>
-                
-                <div class="question-text" id="question-text">
-                    Loading question...
-                </div>
-                
-                <div id="timer-container">
-                    <div id="timer-bar"></div>
-                </div>
-
-                <div id="answers-grid">
-                    <!-- Buttons generated dynamically -->
-                </div>
-            </div>
-        </div>
-
-        <!-- ==================== RESULT SCREEN ==================== -->
-        <div id="result-screen" class="screen">
-            <div class="glass-panel">
-                <h1 style="font-size: clamp(2rem, 6vw, 4rem); margin-bottom: 10px; color: var(--gold);">Game Over!</h1>
-                <h2 id="res-msg" style="margin-bottom: 20px;">Well done, Hero!</h2>
-                
-                <div class="rank-badge" id="res-rank">Wizard</div>
-                
-                <div class="result-stat">Score: <span class="result-highlight" id="res-score">0</span> / 10</div>
-                <div class="result-stat">Coins Earned: <span class="result-highlight" id="res-coins">0</span> 🪙</div>
-                <div class="result-stat">Highest Combo: <span class="result-highlight" id="res-combo">0</span> 🔥</div>
-                <div class="result-stat">Accuracy: <span class="result-highlight" id="res-acc">0%</span></div>
-                
-                <div class="action-buttons">
-                    <button class="btn" id="btn-play-again">🔄 Play Again</button>
-                    <button class="btn gold" id="btn-change-player">👤 Change Player</button>
-                </div>
-            </div>
-        </div>
-
+        <button class="btn" onclick="openMap()">⚔️ Enter Arithmia</button>
+        <button class="btn secondary" onclick="resetSave()" style="font-size: 0.9rem; padding: 10px 20px;">Reset Progress</button>
     </div>
 
-    <!-- ==================== FEEDBACK OVERLAY ==================== -->
-    <div id="feedback-overlay">
-        <div class="feedback-box">
-            <div class="feedback-title" id="fb-title">Correct!</div>
-            <div class="feedback-explanation" id="fb-exp">Explanation goes here.</div>
-            <button class="btn" id="btn-continue">Continue ➡️</button>
+    <!-- SCREEN 2: WORLD MAP -->
+    <div id="screen-map" class="screen center-col">
+        <h2>Realm of Arithmia</h2>
+        <div class="map-grid">
+            <div class="map-node" onclick="startLevel(0)">
+                <div class="icon">🏝️</div>
+                <div class="title">Integer Isles</div>
+                <div class="desc">Ch 1: Abs & Integers</div>
+            </div>
+            <div class="map-node" onclick="startLevel(1)">
+                <div class="icon">🌲</div>
+                <div class="title">Fraction Forest</div>
+                <div class="desc">Ch 2: Frac, GCD, LCM</div>
+            </div>
+            <div class="map-node" onclick="startLevel(2)">
+                <div class="icon">🏜️</div>
+                <div class="title">Decimal Desert</div>
+                <div class="desc">Ch 3: Decimals</div>
+            </div>
+            <div class="map-node" onclick="startLevel(3)">
+                <div class="icon">🏰</div>
+                <div class="title">Equation Spire</div>
+                <div class="desc">Ch 4: Linear Equations</div>
+            </div>
+        </div>
+        <button class="btn secondary" onclick="switchScreen('menu')">⬅ Back to Menu</button>
+    </div>
+
+    <!-- SCREEN 3: COMBAT -->
+    <div id="screen-combat" class="screen">
+        <div class="hud">
+            <div class="entity-hud">
+                <div class="stat-labels"><span>🧙‍♂️ You (Lvl <span id="cb-lvl">1</span>)</span><span id="cb-hp-text">100/100</span></div>
+                <div class="stat-bar-container"><div id="cb-hp-bar" class="stat-bar hp-fill"></div></div>
+                <div class="stat-labels" style="margin-top: 5px;"><span>✨ MP</span><span id="cb-mp-text">50/50</span></div>
+                <div class="stat-bar-container"><div id="cb-mp-bar" class="stat-bar mp-fill"></div></div>
+            </div>
+            <div class="entity-hud" style="align-items: flex-end; text-align: right;">
+                <div class="stat-labels"><span id="cb-enemy-name" style="color: var(--accent);">Boss</span><span id="cb-enemy-hp-text">100/100</span></div>
+                <div class="stat-bar-container" style="direction: rtl;"><div id="cb-enemy-hp-bar" class="stat-bar hp-fill"></div></div>
+                <div style="font-size: 0.8rem; margin-top: 5px; color: var(--text-muted);">Questions: <span id="cb-q-count">1/10</span></div>
+            </div>
+        </div>
+
+        <div class="combat-arena" id="combat-arena">
+            <div class="enemy-sprite" id="enemy-sprite">🐂</div>
+            
+            <div style="display:flex; flex-direction: column; gap: 15px; width: 100%; align-items: center;">
+                <div class="math-board" id="math-board">
+                    <div class="timer-wrap">
+                        <div class="stat-bar-container" style="height: 8px;"><div id="timer-bar" class="stat-bar timer-fill"></div></div>
+                    </div>
+                    <div style="color: #64748b; font-size: 0.9rem; font-weight: bold; text-transform: uppercase;" id="q-topic">Topic</div>
+                    <div class="question-text" id="question-text">Loading...</div>
+                </div>
+
+                <div class="answers-grid" id="answers-grid">
+                    <button class="answer-btn" onclick="checkAnswer(0)" id="btn-0">A</button>
+                    <button class="answer-btn" onclick="checkAnswer(1)" id="btn-1">B</button>
+                    <button class="answer-btn" onclick="checkAnswer(2)" id="btn-2">C</button>
+                    <button class="answer-btn" onclick="checkAnswer(3)" id="btn-3">D</button>
+                </div>
+
+                <div class="combat-controls">
+                    <button class="tool-btn flee-btn" onclick="openMap()">🏃 Flee</button>
+                    <button class="tool-btn hint-btn" onclick="useHint()" id="hint-btn">🦉 Hint (15 MP)</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script>
-        /* ==========================================================================
-           AUDIO SYNTHESIZER (No External Files)
-           ========================================================================== */
-        const AudioEngine = (function() {
-            let ctx = null;
-            
-            function init() {
-                if (!ctx) {
-                    window.AudioContext = window.AudioContext || window.webkitAudioContext;
-                    ctx = new AudioContext();
-                }
-                if (ctx.state === 'suspended') ctx.resume();
-            }
+    <!-- OVERLAYS -->
+    <div id="overlay-feedback" class="overlay">
+        <div class="dialog-box">
+            <div class="dialog-title" id="fb-title">🦉 Decimal the Owl says:</div>
+            <div class="dialog-text" id="fb-text">Explanation goes here.</div>
+            <button class="btn" onclick="nextTurn()">Continue</button>
+        </div>
+    </div>
 
-            function playTone(freq, type, duration, vol=0.1) {
-                if(!ctx) return;
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = type;
-                osc.frequency.setValueAtTime(freq, ctx.currentTime);
-                
-                gain.gain.setValueAtTime(vol, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-                
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + duration);
-            }
+    <div id="overlay-end" class="overlay">
+        <div class="dialog-box" style="text-align: center;">
+            <h2 id="end-title" style="font-size: 3rem; margin-bottom: 10px;">Victory!</h2>
+            <div id="end-stars" style="font-size: 3rem; color: var(--accent); margin-bottom: 10px; letter-spacing: 10px;">★★★</div>
+            <div class="dialog-text" id="end-stats">XP: +50 | Gold: +20</div>
+            <button class="btn" onclick="openMap()" style="width: 100%;">Return to Map</button>
+        </div>
+    </div>
+</div>
 
-            return {
-                init,
-                playClick: () => playTone(600, 'sine', 0.1, 0.05),
-                playCorrect: () => {
-                    playTone(523.25, 'sine', 0.1, 0.1); // C5
-                    setTimeout(() => playTone(659.25, 'sine', 0.1, 0.1), 100); // E5
-                    setTimeout(() => playTone(783.99, 'sine', 0.2, 0.1), 200); // G5
-                },
-                playWrong: () => {
-                    playTone(200, 'sawtooth', 0.3, 0.1);
-                    setTimeout(() => playTone(150, 'sawtooth', 0.4, 0.1), 150);
-                },
-                playGameOver: () => {
-                    playTone(400, 'square', 0.2, 0.1);
-                    setTimeout(() => playTone(350, 'square', 0.2, 0.1), 200);
-                    setTimeout(() => playTone(300, 'square', 0.4, 0.1), 400);
-                },
-                playWin: () => {
-                    playTone(440, 'sine', 0.1, 0.1);
-                    setTimeout(() => playTone(554, 'sine', 0.1, 0.1), 150);
-                    setTimeout(() => playTone(659, 'sine', 0.1, 0.1), 300);
-                    setTimeout(() => playTone(880, 'sine', 0.4, 0.1), 450);
-                }
-            }
-        })();
+<script>
+/* ==========================================================================
+   GAME STATE & CONFIGURATION
+   ========================================================================== */
+const DEFAULT_STATE = {
+    level: 1, xp: 0,
+    maxHp: 100, maxMp: 50,
+    gold: 0, stars: 0
+};
+let pState = JSON.parse(localStorage.getItem('magicMathSave')) || { ...DEFAULT_STATE };
 
-        /* ==========================================================================
-           BACKGROUND EFFECTS
-           ========================================================================== */
-        function createParticles() {
-            const container = document.getElementById('particles-bg');
-            const particleCount = 20;
-            for(let i=0; i<particleCount; i++) {
-                let p = document.createElement('div');
-                p.className = 'particle';
-                let size = Math.random() * 8 + 2;
-                p.style.width = size + 'px';
-                p.style.height = size + 'px';
-                p.style.left = Math.random() * 100 + 'vw';
-                p.style.animationDuration = (Math.random() * 10 + 5) + 's';
-                p.style.animationDelay = (Math.random() * 5) + 's';
-                container.appendChild(p);
-            }
+const CHAPTERS = [
+    { name: "Minus Minotaur", sprite: "🐂", topic: "Integers", hp: 100 },
+    { name: "Fractured Ent", sprite: "🌳", topic: "Fractions & GCD/LCM", hp: 120 },
+    { name: "Sand-Serpent", sprite: "🐍", topic: "Decimals", hp: 140 },
+    { name: "The Nullifier", sprite: "🕳️", topic: "Linear Equations", hp: 180 }
+];
+
+let cState = { // Combat State
+    chapterId: 0,
+    questions: [],
+    qIndex: 0,
+    enemyHp: 100,
+    enemyMaxHp: 100,
+    hp: 100, mp: 50,
+    timer: null,
+    timeLeft: 20,
+    correctIdx: -1,
+    isProcessing: false,
+    correctCount: 0
+};
+
+/* ==========================================================================
+   AUDIO ENGINE (Web Audio API)
+   ========================================================================== */
+const Audio = (function() {
+    let ctx = null;
+    let enabled = false;
+
+    function init() {
+        if(!ctx) {
+            ctx = new (window.AudioContext || window.webkitAudioContext)();
+            enabled = true;
         }
+        if(ctx.state === 'suspended') ctx.resume();
+    }
 
-        /* ==========================================================================
-           QUESTION DATABASE GENERATOR (Exactly 100 Questions)
-           ========================================================================== */
-        // We generate exactly 10 questions for 10 different topics to total 100.
-        const mathDB = [];
+    function playTone(freq, type, duration, vol=0.1) {
+        if(!enabled || !ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(vol, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+    }
+
+    return {
+        init,
+        click: () => playTone(600, 'sine', 0.1, 0.1),
+        correct: () => { playTone(523.25, 'sine', 0.1, 0.1); setTimeout(()=>playTone(659.25, 'sine', 0.2, 0.15), 100); },
+        wrong: () => playTone(150, 'sawtooth', 0.3, 0.15),
+        damage: () => playTone(100, 'square', 0.2, 0.2),
+        hit: () => playTone(800, 'square', 0.1, 0.1)
+    };
+})();
+
+/* ==========================================================================
+   QUESTION GENERATOR (Grade 7 Mathayom 1 Sem 1)
+   ========================================================================== */
+const Rand = {
+    int: (min, max) => Math.floor(Math.random() * (max - min + 1)) + min,
+    pick: (arr) => arr[Math.floor(Math.random() * arr.length)],
+    shuffle: (arr) => {
+        for(let i=arr.length-1; i>0; i--){
+            const j=Math.floor(Math.random()*(i+1));
+            [arr[i], arr[j]]=[arr[j], arr[i]];
+        }
+        return arr;
+    }
+};
+
+const MathGen = {
+    // Generate distractors based on common mistakes
+    makeDistractors: (ans, type, range=5) => {
+        let opts = new Set([ans]);
+        while(opts.size < 4) {
+            let offset = Rand.int(-range, range);
+            if(offset===0) offset=1;
+            if(type === 'int') opts.add(ans + offset);
+            else if(type === 'sign') opts.add(-ans);
+            else if(type === 'dec') opts.add(Math.round((ans + offset*0.1)*100)/100);
+            else if(type === 'frac') opts.add(ans + offset);
+        }
+        let arr = Array.from(opts);
+        if(opts.size>4) arr=arr.slice(0,4); // safety
+        return arr;
+    },
+    ch0_Integers: () => {
+        const op = Rand.pick(['+','-','*']);
+        let a, b, ans, exp;
+        if(op === '+') {
+            a = Rand.int(-20, 20); b = Rand.int(-20, 20); ans = a + b;
+            exp = `When adding integers, if signs differ, subtract the smaller absolute value from the larger and keep the sign of the larger.`;
+        } else if(op === '-') {
+            a = Rand.int(-20, 20); b = Rand.int(-20, 20); ans = a - b;
+            exp = `Subtracting an integer is the same as adding its opposite: ${a} - (${b}) = ${a} + (${-b}).`;
+        } else {
+            a = Rand.int(-12, 12); b = Rand.int(-12, 12); ans = a * b;
+            exp = `Multiplying integers: same signs = positive result, different signs = negative result.`;
+        }
+        let bStr = b < 0 ? `(${b})` : b;
+        let opts = MathGen.makeDistractors(ans, 'int');
+        if(op==='*') opts[1] = -ans; // Common sign mistake
+        return { q: `${a} ${op} ${bStr} = ?`, ans: ans.toString(), opts: Rand.shuffle(opts.map(String)), exp, topic: "Integers" };
+    },
+    ch1_Fractions: () => {
+        const type = Rand.pick(['gcd', 'lcm', 'add']);
+        if(type==='gcd') {
+            let gcd = Rand.int(2,8); let a = gcd * Rand.int(2,5); let b = gcd * Rand.int(2,6);
+            if(a===b) b += gcd;
+            let realGcd = function(x,y){return y===0?x:realGcd(y,x%y)}(a,b);
+            let opts = MathGen.makeDistractors(realGcd, 'int');
+            return { q: `Find GCD of ${a} & ${b}`, ans: realGcd.toString(), opts: Rand.shuffle(opts.map(String)), exp: `The Greatest Common Divisor is the largest number that divides both evenly.`, topic: "GCD" };
+        } else if (type==='lcm') {
+            let a = Rand.int(3,8); let b = Rand.int(4,10);
+            let gcd = function(x,y){return y===0?x:realGcd(y,x%y)}(a,b);
+            let lcm = Math.abs(a*b)/gcd;
+            let opts = MathGen.makeDistractors(lcm, 'int', 10);
+            return { q: `Find LCM of ${a} & ${b}`, ans: lcm.toString(), opts: Rand.shuffle(opts.map(String)), exp: `The Least Common Multiple is the smallest number that is a multiple of both.`, topic: "LCM" };
+        } else {
+            let den = Rand.pick([2,3,4,5]); let n1 = Rand.int(1, den*2); let n2 = Rand.int(1, den*2);
+            let ans = n1+n2;
+            let opts = MathGen.makeDistractors(ans, 'frac').map(x => `${x}/${den}`);
+            return { q: `${n1}/${den} + ${n2}/${den} = ?`, ans: `${ans}/${den}`, opts: Rand.shuffle(opts), exp: `To add fractions with the same denominator, add the numerators and keep the denominator.`, topic: "Fractions" };
+        }
+    },
+    ch2_Decimals: () => {
+        const op = Rand.pick(['+','-']);
+        let a = Rand.int(10, 99) / 10; // 1.0 to 9.9
+        let b = Rand.int(10, 99) / 10;
+        let ans = op === '+' ? (a*10 + b*10)/10 : (a*10 - b*10)/10;
+        let opts = MathGen.makeDistractors(ans, 'dec');
+        return { q: `${a.toFixed(1)} ${op} ${b.toFixed(1)} = ?`, ans: ans.toFixed(1), opts: Rand.shuffle(opts.map(x=>x.toFixed(1))), exp: `Align the decimal points when adding or subtracting decimals.`, topic: "Decimals" };
+    },
+    ch3_Equations: () => {
+        // ax + b = c  => ans = (c-b)/a
+        let ans = Rand.int(-5, 10);
+        let a = Rand.int(2, 6);
+        let b = Rand.int(-10, 15);
+        let c = a * ans + b;
+        let bStr = b < 0 ? `- ${Math.abs(b)}` : `+ ${b}`;
+        let opts = MathGen.makeDistractors(ans, 'int');
+        return { q: `${a}x ${bStr} = ${c}. Find x.`, ans: ans.toString(), opts: Rand.shuffle(opts.map(String)), exp: `Isolate x: First undo addition/subtraction, then divide by the coefficient (${a}).`, topic: "Algebra" };
+    }
+};
+
+function generateQuestions(chapterId) {
+    let qs = [];
+    for(let i=0; i<10; i++) {
+        if(chapterId === 0) qs.push(MathGen.ch0_Integers());
+        else if(chapterId === 1) qs.push(MathGen.ch1_Fractions());
+        else if(chapterId === 2) qs.push(MathGen.ch2_Decimals());
+        else if(chapterId === 3) qs.push(MathGen.ch3_Equations());
+    }
+    return qs;
+}
+
+/* ==========================================================================
+   CORE LOGIC & UI UPDATES
+   ========================================================================== */
+function saveGame() { localStorage.setItem('magicMathSave', JSON.stringify(pState)); }
+function resetSave() { 
+    if(confirm("Reset all progress?")) { pState = { ...DEFAULT_STATE }; saveGame(); updateMenuUI(); }
+}
+function getRank(stars) {
+    if(stars<10) return "Novice"; if(stars<25) return "Apprentice";
+    if(stars<50) return "Spellcaster"; if(stars<100) return "Grandmaster";
+    return "Mathemagician";
+}
+function getReqXp(lvl) { return lvl * 100; }
+
+function switchScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(`screen-${id}`).classList.add('active');
+    Audio.init();
+}
+
+function updateMenuUI() {
+    pState.maxHp = 100 + (pState.level - 1)*20;
+    pState.maxMp = 50 + (pState.level - 1)*10;
+    pState.rank = getRank(pState.stars);
+    
+    document.getElementById('menu-lvl').innerText = pState.level;
+    document.getElementById('menu-rank').innerText = pState.rank;
+    document.getElementById('menu-stars').innerText = pState.stars;
+    document.getElementById('menu-gold').innerText = pState.gold;
+    
+    let reqXp = getReqXp(pState.level);
+    document.getElementById('menu-xp-text').innerText = `${pState.xp}/${reqXp}`;
+    document.getElementById('menu-xp-bar').style.width = `${(pState.xp / reqXp)*100}%`;
+}
+
+function openMap() {
+    Audio.click(); updateMenuUI(); switchScreen('map');
+    clearInterval(cState.timer);
+}
+
+/* ==========================================================================
+   COMBAT SYSTEM
+   ========================================================================== */
+function startLevel(chapId) {
+    Audio.click();
+    const boss = CHAPTERS[chapId];
+    cState = {
+        chapterId: chapId,
+        questions: generateQuestions(chapId),
+        qIndex: 0, correctCount: 0,
+        enemyMaxHp: boss.hp, enemyHp: boss.hp,
+        hp: pState.maxHp, mp: pState.maxMp,
+        isProcessing: false, timeLeft: 20
+    };
+    
+    document.getElementById('cb-enemy-name').innerText = boss.name;
+    document.getElementById('enemy-sprite').innerText = boss.sprite;
+    document.getElementById('cb-lvl').innerText = pState.level;
+    
+    updateCombatHUD();
+    switchScreen('combat');
+    loadQuestion();
+}
+
+function updateCombatHUD() {
+    document.getElementById('cb-hp-text').innerText = `${cState.hp}/${pState.maxHp}`;
+    document.getElementById('cb-hp-bar').style.width = `${(cState.hp/pState.maxHp)*100}%`;
+    document.getElementById('cb-mp-text').innerText = `${cState.mp}/${pState.maxMp}`;
+    document.getElementById('cb-mp-bar').style.width = `${(cState.mp/pState.maxMp)*100}%`;
+    
+    document.getElementById('cb-enemy-hp-text').innerText = `${cState.enemyHp}/${cState.enemyMaxHp}`;
+    document.getElementById('cb-enemy-hp-bar').style.width = `${(cState.enemyHp/cState.enemyMaxHp)*100}%`;
+    
+    document.getElementById('hint-btn').disabled = cState.mp < 15;
+}
+
+function loadQuestion() {
+    if(cState.qIndex >= 10 || cState.enemyHp <= 0 || cState.hp <= 0) {
+        endCombat(); return;
+    }
+    
+    cState.isProcessing = false;
+    let q = cState.questions[cState.qIndex];
+    document.getElementById('cb-q-count').innerText = `${cState.qIndex + 1}/10`;
+    document.getElementById('q-topic').innerText = q.topic;
+    document.getElementById('question-text').innerText = q.q;
+    
+    for(let i=0; i<4; i++) {
+        let btn = document.getElementById(`btn-${i}`);
+        btn.innerText = q.opts[i];
+        btn.className = 'answer-btn';
+        if(q.opts[i] === q.ans) cState.correctIdx = i;
+    }
+    
+    cState.timeLeft = 20; // 20s per question
+    startTimer();
+}
+
+function startTimer() {
+    clearInterval(cState.timer);
+    let tb = document.getElementById('timer-bar');
+    cState.timer = setInterval(() => {
+        cState.timeLeft -= 0.1;
+        let pct = (cState.timeLeft / 20) * 100;
+        tb.style.width = `${pct}%`;
+        if(pct < 25) tb.style.background = 'linear-gradient(90deg, #f43f5e, #be123c)';
+        else tb.style.background = 'linear-gradient(90deg, var(--accent), #fbbf24)';
         
-        function addQ(topic, diff, q, correctAns, wrong1, wrong2, wrong3, exp) {
-            let options = [
-                { t: correctAns, isCorrect: true },
-                { t: wrong1, isCorrect: false },
-                { t: wrong2, isCorrect: false },
-                { t: wrong3, isCorrect: false }
-            ];
-            // Shuffle options
-            options.sort(() => Math.random() - 0.5);
-            mathDB.push({ topic, diff, q, options, exp });
+        if(cState.timeLeft <= 0) {
+            clearInterval(cState.timer);
+            processAnswer(-1); // Timeout
         }
+    }, 100);
+}
 
-        function generateDatabase() {
-            // 1. Integers (10)
-            for(let i=1; i<=10; i++) {
-                let d = i<=3?'Easy':i<=7?'Medium':'Hard';
-                let a = i*2, b = i*3 - 15;
-                if(i%2===0) { // Add/Sub
-                    addQ('Integers', d, `What is ${a} + (${b})?`, `${a+b}`, `${a-b}`, `${Math.abs(a+b)+2}`, `${a+b-4}`, `Adding a negative is the same as subtraction: ${a} - ${Math.abs(b)} = ${a+b}.`);
-                } else { // Mult/Div
-                    let m1 = -i, m2 = (i%3)+2;
-                    addQ('Integers', d, `Evaluate: ${m1} × ${m2}`, `${m1*m2}`, `${Math.abs(m1*m2)}`, `${m1*m2-1}`, `${-(m1*m2)}`, `A negative multiplied by a positive yields a negative product.`);
-                }
-            }
-            // 2. Fractions (10)
-            for(let i=1; i<=10; i++) {
-                let d = i<=3?'Easy':i<=7?'Medium':'Hard';
-                let num1 = i, den1 = i+2, num2 = 1, den2 = i+2;
-                if(i<5) { // Same denominator addition
-                    addQ('Fractions', d, `Simplify: ${num1}/${den1} + ${num2}/${den1}`, `${num1+num2}/${den1}`, `${num1+num2}/${den1*2}`, `${num1}/${den1}`, `1/${den1}`, `When denominators are the same, simply add the numerators.`);
-                } else { // Different denom / multiplication
-                    addQ('Fractions', d, `Evaluate: 1/2 × ${i}/${i+1}`, `${i}/${2*(i+1)}`, `${i+1}/${2*i}`, `${1}/${2*(i+1)}`, `${i*2}/${i+1}`, `Multiply numerators together and denominators together.`);
-                }
-            }
-            // 3. Decimals (10)
-            for(let i=1; i<=10; i++) {
-                let d = i<=4?'Easy':i<=8?'Medium':'Hard';
-                let val1 = (i*0.5).toFixed(2);
-                let val2 = (i*0.2).toFixed(2);
-                let sum = (parseFloat(val1) + parseFloat(val2)).toFixed(2);
-                if(i%2===0) addQ('Decimals', d, `Add: ${val1} + ${val2}`, `${sum}`, `${(parseFloat(sum)+0.1).toFixed(2)}`, `${(parseFloat(sum)-0.1).toFixed(2)}`, `${(parseFloat(sum)+1).toFixed(2)}`, `Align the decimal points and add normally.`);
-                else addQ('Decimals', d, `Multiply: 0.${i} × 0.2`, `${(i*0.02).toFixed(2)}`, `${(i*0.2).toFixed(1)}`, `${(i*0.02).toFixed(3)}`, `${(i*2).toFixed(2)}`, `Count the total decimal places in the factors to place the decimal in the product.`);
-            }
-            // 4. Percentage (10)
-            for(let i=1; i<=10; i++) {
-                let d = i<=4?'Easy':'Medium';
-                let p = i*10, base = 50 + (i*10);
-                let ans = (p/100) * base;
-                addQ('Percentage', d, `What is ${p}% of ${base}?`, `${ans}`, `${ans+10}`, `${ans-5}`, `${ans*2}`, `Convert percentage to a decimal (${p/100}) and multiply by ${base}.`);
-            }
-            // 5. Ratio (10)
-            for(let i=1; i<=10; i++) {
-                let d = i<=5?'Easy':'Medium';
-                let r1 = i, r2 = i+1;
-                let total = (r1+r2) * 5;
-                let share = r1 * 5;
-                addQ('Ratio', d, `Divide ${total} in the ratio ${r1}:${r2}. What is the smaller part?`, `${share}`, `${share+5}`, `${total/2}`, `${r2*5}`, `Total parts = ${r1+r2}. One part = ${total}/${r1+r2} = 5. Smaller part = 5 × ${r1} = ${share}.`);
-            }
-            // 6. Algebra (10)
-            for(let i=1; i<=10; i++) {
-                let d = i<=3?'Easy':i<=7?'Medium':'Hard';
-                let x = i + 2;
-                let b = i;
-                let ans = 3*x + b;
-                addQ('Algebra', d, `If x = ${x}, evaluate 3x + ${b}`, `${ans}`, `${ans+2}`, `${ans-x}`, `${3*(x+b)}`, `Substitute x with ${x}: 3(${x}) + ${b} = ${3*x} + ${b} = ${ans}.`);
-            }
-            // 7. Geometry (10)
-            for(let i=1; i<=10; i++) {
-                let d = 'Medium';
-                let angle = 30 + (i*5);
-                let comp = 90 - angle;
-                if(angle < 90) addQ('Geometry', d, `What is the complementary angle of ${angle}°?`, `${comp}°`, `${180-angle}°`, `${comp+10}°`, `${angle}°`, `Complementary angles add up to 90°. 90 - ${angle} = ${comp}.`);
-                else addQ('Geometry', d, `What is the supplementary angle of ${angle}°?`, `${180-angle}°`, `${90-(angle-90)}°`, `${180-angle+10}°`, `${angle}°`, `Supplementary angles add up to 180°. 180 - ${angle} = ${180-angle}.`);
-            }
-            // 8. Area & Perimeter (10)
-            for(let i=1; i<=10; i++) {
-                let d = 'Easy';
-                let l = i+2, w = i+1;
-                if(i%2===0) addQ('Area', d, `Find the area of a rectangle with length ${l} and width ${w}.`, `${l*w}`, `${l*w+2}`, `${2*l+2*w}`, `${l*w-1}`, `Area of a rectangle = length × width = ${l} × ${w} = ${l*w}.`);
-                else addQ('Perimeter', d, `Find the perimeter of a rectangle with length ${l} and width ${w}.`, `${2*l + 2*w}`, `${l*w}`, `${l+w}`, `${2*l + 2*w + 2}`, `Perimeter = 2(length + width) = 2(${l} + ${w}) = ${2*(l+w)}.`);
-            }
-            // 9. Probability & Statistics (10)
-            for(let i=1; i<=10; i++) {
-                let d = 'Medium';
-                let set = [i, i+2, i+4, i+6, i+8];
-                let mean = (i*5 + 20) / 5;
-                if(i%2===0) addQ('Statistics', d, `Find the mean of the set: ${set.join(', ')}`, `${mean}`, `${mean+1}`, `${mean-2}`, `${i+4}`, `Mean = (Sum of all items) / (Number of items) = ${mean*5} / 5 = ${mean}.`);
-                else addQ('Probability', d, `A bag has ${i} red balls and 5 blue balls. Probability of picking blue?`, `5/${i+5}`, `${i}/${i+5}`, `1/5`, `5/${i}`, `Total balls = ${i+5}. Blue balls = 5. Probability = 5/${i+5}.`);
-            }
-            // 10. Simple Equations (10)
-            for(let i=1; i<=10; i++) {
-                let d = 'Hard';
-                let x = i; // answer
-                let c = i*2;
-                let total = 2*x + c;
-                addQ('Equations', d, `Solve for x: 2x + ${c} = ${total}`, `${x}`, `${x+1}`, `${x-1}`, `${x*2}`, `Subtract ${c} from both sides: 2x = ${total-c}. Divide by 2: x = ${x}.`);
-            }
-        }
+function checkAnswer(idx) {
+    if(cState.isProcessing) return;
+    processAnswer(idx);
+}
+
+function processAnswer(idx) {
+    cState.isProcessing = true;
+    clearInterval(cState.timer);
+    let q = cState.questions[cState.qIndex];
+    
+    // Reveal correct
+    document.getElementById(`btn-${cState.correctIdx}`).classList.add('correct');
+    
+    if(idx === cState.correctIdx) {
+        // CORRECT
+        Audio.correct();
+        cState.correctCount++;
+        let dmg = Math.ceil(cState.enemyMaxHp / 10);
+        cState.enemyHp = Math.max(0, cState.enemyHp - dmg);
+        showDmgText(`-${dmg}`, 'enemy-sprite', '#10b981');
+        document.getElementById('enemy-sprite').style.animation = 'shake 0.4s';
+        setTimeout(() => { document.getElementById('enemy-sprite').style.animation = 'float 3s ease-in-out infinite'; }, 400);
         
-        generateDatabase(); // Exactly 100 questions generated.
+        updateCombatHUD();
+        setTimeout(() => { cState.qIndex++; loadQuestion(); }, 1200);
+        
+    } else {
+        // WRONG / TIMEOUT
+        Audio.wrong();
+        if(idx !== -1) document.getElementById(`btn-${idx}`).classList.add('wrong');
+        
+        let pDmg = Math.ceil(pState.maxHp * 0.15); // 15% max hp damage
+        cState.hp = Math.max(0, cState.hp - pDmg);
+        showDmgText(`-${pDmg}`, 'combat-arena', '#ef4444');
+        document.getElementById('combat-arena').style.animation = 'shake 0.4s';
+        setTimeout(() => { document.getElementById('combat-arena').style.animation = ''; }, 400);
+        
+        updateCombatHUD();
+        
+        setTimeout(() => {
+            document.getElementById('fb-title').innerHTML = idx === -1 ? '⏳ Time Out!' : '🦉 Decimal the Owl says:';
+            document.getElementById('fb-text').innerText = q.exp;
+            document.getElementById('overlay-feedback').classList.add('active');
+        }, 1000);
+    }
+}
 
-        /* ==========================================================================
-           GAME STATE & LOGIC
-           ========================================================================== */
-        let state = {
-            name: 'Hero',
-            score: 0,
-            coins: 0,
-            combo: 0,
-            maxCombo: 0,
-            lives: 3,
-            qIndex: 0,
-            timer: 20,
-            timerId: null,
-            questions: [],
-            currentQ: null,
-            isAnswering: false
-        };
+function nextTurn() {
+    Audio.click();
+    document.getElementById('overlay-feedback').classList.remove('active');
+    if(cState.hp <= 0) endCombat();
+    else { cState.qIndex++; loadQuestion(); }
+}
 
-        const UI = {
-            startScreen: document.getElementById('start-screen'),
-            gameScreen: document.getElementById('game-screen'),
-            resultScreen: document.getElementById('result-screen'),
-            fbOverlay: document.getElementById('feedback-overlay'),
-            
-            // HUD elements
-            name: document.getElementById('hud-name'),
-            lives: document.getElementById('hud-lives'),
-            score: document.getElementById('hud-score'),
-            coins: document.getElementById('hud-coins'),
-            combo: document.getElementById('hud-combo'),
-            qnum: document.getElementById('hud-qnum'),
-            energyBar: document.getElementById('energy-bar'),
-            timerBar: document.getElementById('timer-bar'),
-            
-            // Question area
-            topic: document.getElementById('tag-topic'),
-            diff: document.getElementById('tag-diff'),
-            qText: document.getElementById('question-text'),
-            ansGrid: document.getElementById('answers-grid'),
-            
-            // Feedback
-            fbTitle: document.getElementById('fb-title'),
-            fbExp: document.getElementById('fb-exp')
-        };
-
-        function switchScreen(screen) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            screen.classList.add('active');
+function useHint() {
+    if(cState.mp < 15 || cState.isProcessing) return;
+    Audio.click();
+    cState.mp -= 15;
+    updateCombatHUD();
+    
+    // Disable 2 wrong answers
+    let hidden = 0;
+    let opts = [0,1,2,3];
+    Rand.shuffle(opts);
+    for(let i of opts) {
+        if(i !== cState.correctIdx && hidden < 2) {
+            document.getElementById(`btn-${i}`).classList.add('disabled');
+            document.getElementById(`btn-${i}`).innerText = '';
+            hidden++;
         }
+    }
+}
 
-        function initApp() {
-            createParticles();
-            const savedName = localStorage.getItem('magicMath_name');
-            if(savedName) document.getElementById('player-name').value = savedName;
-            
-            const high = localStorage.getItem('magicMath_highScore') || 0;
-            document.getElementById('high-score-display').innerText = `Your High Score: ${high}/10`;
-            
-            document.getElementById('btn-start').addEventListener('click', startGame);
-            document.getElementById('btn-continue').addEventListener('click', nextQuestion);
-            document.getElementById('btn-play-again').addEventListener('click', () => { switchScreen(UI.startScreen); });
-            document.getElementById('btn-change-player').addEventListener('click', () => { 
-                document.getElementById('player-name').value = '';
-                document.getElementById('player-name').focus();
-                switchScreen(UI.startScreen); 
-            });
+function showDmgText(text, parentId, color) {
+    const parent = document.getElementById(parentId);
+    const el = document.createElement('div');
+    el.className = 'dmg-text';
+    el.innerText = text;
+    el.style.color = color;
+    if(parentId==='combat-arena') { el.style.top='10%'; el.style.left='20%'; }
+    else { el.style.top='-20%'; el.style.left='50%'; el.style.transform='translateX(-50%)'; }
+    parent.appendChild(el);
+    setTimeout(() => el.remove(), 1000);
+}
+
+function endCombat() {
+    let win = cState.enemyHp <= 0;
+    document.getElementById('overlay-end').classList.add('active');
+    let title = document.getElementById('end-title');
+    let starsEl = document.getElementById('end-stars');
+    let stats = document.getElementById('end-stats');
+    
+    if(win) {
+        Audio.correct(); // Play win jingle
+        title.innerText = "Boss Defeated!";
+        title.style.color = "var(--correct)";
+        
+        let stars = 1;
+        if(cState.correctCount >= 8) stars = 2;
+        if(cState.correctCount === 10) stars = 3;
+        
+        starsEl.innerText = "★".repeat(stars) + "☆".repeat(3-stars);
+        
+        let xpGained = stars * 40 + (cState.chapterId * 10);
+        let goldGained = stars * 15;
+        
+        stats.innerText = `XP: +${xpGained} | Gold: +${goldGained}\nAccuracy: ${cState.correctCount}/10`;
+        
+        pState.xp += xpGained;
+        pState.gold += goldGained;
+        pState.stars += stars;
+        
+        // Level up logic
+        let req = getReqXp(pState.level);
+        if(pState.xp >= req) {
+            pState.level++;
+            pState.xp -= req;
+            stats.innerText += `\n🌟 LEVEL UP! 🌟`;
         }
+    } else {
+        Audio.damage(); // Play loss sound
+        title.innerText = "Defeated...";
+        title.style.color = "var(--wrong)";
+        starsEl.innerText = "☆☆☆";
+        stats.innerText = `Keep practicing and try again!\nAccuracy: ${cState.correctCount}/${cState.qIndex}`;
+    }
+    saveGame();
+}
 
-        function startGame() {
-            AudioEngine.init();
-            AudioEngine.playClick();
-            
-            const nameInput = document.getElementById('player-name').value.trim();
-            if(!nameInput) {
-                alert("Please enter your name to begin the adventure!");
-                return;
-            }
-            
-            localStorage.setItem('magicMath_name', nameInput);
-            
-            // Reset State
-            state = {
-                name: nameInput,
-                score: 0,
-                coins: 0,
-                combo: 0,
-                maxCombo: 0,
-                lives: 3,
-                qIndex: 0,
-                timer: 20,
-                timerId: null,
-                isAnswering: false
-            };
-            
-            // Pick 10 random questions
-            let shuffled = [...mathDB].sort(() => 0.5 - Math.random());
-            state.questions = shuffled.slice(0, 10);
-            
-            updateHUD();
-            switchScreen(UI.gameScreen);
-            loadQuestion();
-        }
-
-        function updateHUD() {
-            UI.name.innerText = state.name;
-            UI.lives.innerText = '❤️'.repeat(state.lives) + '🖤'.repeat(3 - state.lives);
-            UI.score.innerText = state.score;
-            UI.coins.innerText = state.coins;
-            UI.combo.innerText = state.combo;
-            UI.qnum.innerText = state.qIndex + 1;
-            
-            let energyPerc = (state.score / 10) * 100;
-            UI.energyBar.style.width = energyPerc + '%';
-        }
-
-        function loadQuestion() {
-            state.isAnswering = false;
-            state.currentQ = state.questions[state.qIndex];
-            
-            UI.topic.innerText = state.currentQ.topic;
-            UI.diff.innerText = state.currentQ.diff;
-            
-            // Class for color based on diff
-            UI.diff.className = 'tag ' + 'diff-' + state.currentQ.diff;
-            
-            UI.qText.innerText = state.currentQ.q;
-            
-            UI.ansGrid.innerHTML = '';
-            state.currentQ.options.forEach((opt, idx) => {
-                let btn = document.createElement('button');
-                btn.className = 'answer-btn';
-                btn.innerText = opt.t;
-                btn.onclick = () => handleAnswer(opt.isCorrect, btn);
-                UI.ansGrid.appendChild(btn);
-            });
-            
-            updateHUD();
-            startTimer();
-        }
-
-        function startTimer() {
-            clearInterval(state.timerId);
-            state.timer = 20;
-            UI.timerBar.style.width = '100%';
-            UI.timerBar.style.backgroundColor = 'var(--success)';
-            
-            state.timerId = setInterval(() => {
-                state.timer -= 0.1;
-                let perc = (state.timer / 20) * 100;
-                UI.timerBar.style.width = perc + '%';
-                
-                if(state.timer <= 10 && state.timer > 5) UI.timerBar.style.backgroundColor = 'var(--warning)';
-                else if(state.timer <= 5) UI.timerBar.style.backgroundColor = 'var(--danger)';
-                
-                if(state.timer <= 0) {
-                    clearInterval(state.timerId);
-                    handleAnswer(false, null, true); // Time out
-                }
-            }, 100);
-        }
-
-        function handleAnswer(isCorrect, btnEl, isTimeout = false) {
-            if(state.isAnswering) return;
-            state.isAnswering = true;
-            clearInterval(state.timerId);
-            
-            // Highlight correct answer anyway
-            let allBtns = UI.ansGrid.children;
-            for(let i=0; i<allBtns.length; i++) {
-                if(state.currentQ.options[i].isCorrect) {
-                    allBtns[i].classList.add('correct-anim');
-                }
-            }
-
-            if(isCorrect) {
-                AudioEngine.playCorrect();
-                state.score++;
-                state.coins += 10;
-                state.combo++;
-                if(state.combo > state.maxCombo) state.maxCombo = state.combo;
-                
-                showFeedback(true, "Correct! +10 Coins", state.currentQ.exp);
-            } else {
-                AudioEngine.playWrong();
-                if(btnEl) btnEl.classList.add('wrong-anim');
-                state.lives--;
-                state.combo = 0;
-                
-                let title = isTimeout ? "Time's Up!" : "Incorrect!";
-                showFeedback(false, title, state.currentQ.exp);
-            }
-            updateHUD();
-        }
-
-        function showFeedback(isCorrect, title, exp) {
-            setTimeout(() => {
-                UI.fbTitle.innerText = title;
-                UI.fbTitle.className = 'feedback-title ' + (isCorrect ? 'success' : 'error');
-                UI.fbExp.innerText = exp;
-                UI.fbOverlay.classList.add('active');
-            }, 600);
-        }
-
-        function nextQuestion() {
-            AudioEngine.playClick();
-            UI.fbOverlay.classList.remove('active');
-            
-            if(state.lives <= 0 || state.qIndex >= 9) {
-                endGame();
-            } else {
-                state.qIndex++;
-                loadQuestion();
-            }
-        }
-
-        function endGame() {
-            AudioEngine.playWin(); // Even if died, nice ending sound
-            switchScreen(UI.resultScreen);
-            
-            let acc = Math.round((state.score / (state.qIndex + 1)) * 100) || 0;
-            
-            // Rank calc
-            let rank = "Apprentice";
-            if(state.score >= 3) rank = "Student";
-            if(state.score >= 5) rank = "Wizard";
-            if(state.score >= 8) rank = "Master";
-            if(state.score === 10) rank = "Grand Wizard";
-            
-            document.getElementById('res-score').innerText = state.score;
-            document.getElementById('res-coins').innerText = state.coins;
-            document.getElementById('res-combo').innerText = state.maxCombo;
-            document.getElementById('res-acc').innerText = acc + '%';
-            document.getElementById('res-rank').innerText = rank;
-            
-            document.getElementById('res-msg').innerText = state.lives <= 0 ? "You ran out of hearts!" : "Quest Completed!";
-            
-            // Save LocalStorage
-            let high = localStorage.getItem('magicMath_highScore') || 0;
-            if(state.score > high) localStorage.setItem('magicMath_highScore', state.score);
-        }
-
-        // Initialize App on load
-        window.onload = initApp;
-
-    </script>
+// Init
+window.onload = () => { updateMenuUI(); };
+</script>
 </body>
 </html>
