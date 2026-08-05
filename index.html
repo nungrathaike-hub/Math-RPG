@@ -1,787 +1,500 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Magic Math: Educational RPG</title>
-<style>
-    /* ----- CORE VARIABLES & RESET ----- */
-    :root {
-        --bg-color: #0f0c29;
-        --panel-bg: rgba(30, 27, 75, 0.85);
-        --primary: #8b5cf6;
-        --primary-hover: #7c3aed;
-        --secondary: #ec4899;
-        --accent: #f59e0b;
-        --text: #f8fafc;
-        --text-muted: #cbd5e1;
-        --hp-color: #ef4444;
-        --mp-color: #3b82f6;
-        --correct: #10b981;
-        --wrong: #f43f5e;
-        --font-main: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Magic Math - Educational RPG</title>
+    <style>
+        /* --- GDD 16 & 19: Visual Style & Responsive Design --- */
+        :root {
+            --primary-bg: #1a1a2e;
+            --secondary-bg: #16213e;
+            --accent-color: #0f3460;
+            --text-light: #e94560;
+            --health-color: #ff4757;
+            --mana-color: #1e90ff;
+            --parchment: #f1e2c3;
+            --gold: #ffd700;
+        }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* High legibility */
+            user-select: none;
+        }
 
-    body {
-        background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-        color: var(--text);
-        font-family: var(--font-main);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        width: 100vw;
-        overflow: hidden;
-        touch-action: none;
-    }
+        body {
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            color: white;
+        }
 
-    /* ----- LAYOUT ----- */
-    #app {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        max-width: 1280px;
-        background: radial-gradient(circle at center, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
-        box-shadow: 0 0 50px rgba(0,0,0,0.5);
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
+        /* Scalable 16:9 Canvas */
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 1280px;
+            aspect-ratio: 16 / 9;
+            background: linear-gradient(135deg, var(--primary-bg), var(--secondary-bg));
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
 
-    @media (min-aspect-ratio: 16/9) and (min-width: 1024px) {
-        #app { height: 100vh; max-height: 720px; aspect-ratio: 16/9; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
-    }
+        /* --- Screen Flow (GDD 15) --- */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+        }
 
-    .screen {
-        display: none;
-        flex-direction: column;
-        width: 100%;
-        height: 100%;
-        padding: clamp(10px, 2vh, 20px);
-        position: absolute;
-        top: 0; left: 0;
-        z-index: 10;
-        animation: fadeIn 0.4s ease;
-    }
-    .screen.active { display: flex; }
+        .screen.active {
+            display: flex;
+        }
 
-    /* ----- UI COMPONENTS ----- */
-    h1, h2, h3 { font-weight: 800; text-align: center; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-    h1 { font-size: clamp(2rem, 5vw, 4rem); color: var(--accent); letter-spacing: 2px; }
-    h2 { font-size: clamp(1.5rem, 4vw, 2.5rem); color: var(--primary); }
-    
-    .panel {
-        background: var(--panel-bg);
-        border: 2px solid rgba(139, 92, 246, 0.4);
-        border-radius: 16px;
-        padding: clamp(15px, 3vw, 30px);
-        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        backdrop-filter: blur(8px);
-    }
+        /* --- Main Menu --- */
+        #menu-screen {
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle, var(--accent-color), var(--primary-bg));
+        }
 
-    .btn {
-        background: linear-gradient(180deg, var(--primary), var(--primary-hover));
-        color: white;
-        border: 2px solid rgba(255,255,255,0.2);
-        border-radius: 12px;
-        padding: clamp(12px, 2vh, 20px) clamp(20px, 4vw, 40px);
-        font-size: clamp(1rem, 2.5vw, 1.5rem);
-        font-weight: 700;
-        cursor: pointer;
-        transition: transform 0.1s, box-shadow 0.2s, background 0.2s;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-        box-shadow: 0 4px 0 rgba(0,0,0,0.4);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-    }
-    .btn:active { transform: translateY(4px); box-shadow: 0 0 0 rgba(0,0,0,0.4); }
-    .btn:disabled { filter: grayscale(1); opacity: 0.5; pointer-events: none; }
-    .btn.secondary { background: linear-gradient(180deg, #475569, #334155); }
+        h1 {
+            font-size: 5vw;
+            color: var(--gold);
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+            margin-bottom: 20px;
+        }
 
-    /* ----- PROGRESS BARS ----- */
-    .stat-bar-container {
-        width: 100%;
-        background: #1e293b;
-        border: 2px solid #0f172a;
-        border-radius: 8px;
-        height: clamp(16px, 3vh, 24px);
-        position: relative;
-        overflow: hidden;
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
-    }
-    .stat-bar {
-        height: 100%;
-        width: 100%;
-        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-    }
-    .stat-bar::after {
-        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 30%;
-        background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 100%);
-    }
-    .hp-fill { background: linear-gradient(90deg, #b91c1c, var(--hp-color)); }
-    .mp-fill { background: linear-gradient(90deg, #1d4ed8, var(--mp-color)); }
-    .xp-fill { background: linear-gradient(90deg, #047857, var(--correct)); }
-    .timer-fill { background: linear-gradient(90deg, var(--accent), #fbbf24); }
+        .btn {
+            padding: 15px 40px;
+            font-size: 2vw;
+            font-weight: bold;
+            background-color: var(--text-light);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            text-transform: uppercase;
+        }
 
-    .stat-labels {
-        display: flex; justify-content: space-between;
-        font-size: clamp(0.7rem, 2vw, 1rem); font-weight: bold;
-        margin-bottom: 2px; text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-    }
+        .btn:hover {
+            transform: scale(1.05);
+            background-color: #ff5e78;
+        }
 
-    /* ----- SCREENS ----- */
-    /* Menu & Map */
-    .center-col { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; height: 100%; }
-    
-    .stats-header {
-        display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
-        background: rgba(0,0,0,0.4); padding: 10px; border-radius: 12px; width: 100%; text-align: center;
-        border: 1px solid rgba(255,255,255,0.1);
-    }
-    .stat-box { display: flex; flex-direction: column; font-size: clamp(0.8rem, 2vw, 1.2rem); }
-    .stat-value { color: var(--accent); font-weight: 900; font-size: clamp(1.2rem, 3vw, 1.8rem); }
+        /* --- Combat UI (GDD 13) --- */
+        #hud {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            height: 15%;
+        }
 
-    .map-grid {
-        display: grid; grid-template-columns: repeat(2, 1fr); gap: clamp(10px, 2vw, 20px);
-        width: 100%; max-width: 800px; flex: 1; align-content: center;
-    }
-    .map-node {
-        background: var(--panel-bg); border: 2px solid var(--primary); border-radius: 16px;
-        padding: 20px 10px; text-align: center; cursor: pointer;
-        transition: transform 0.2s, background 0.2s;
-        display: flex; flex-direction: column; align-items: center; gap: 10px;
-    }
-    .map-node:hover { transform: scale(1.05); background: rgba(139, 92, 246, 0.4); }
-    .map-node .icon { font-size: clamp(2rem, 6vw, 4rem); }
-    .map-node .title { font-weight: bold; font-size: clamp(1rem, 2.5vw, 1.2rem); color: var(--text); }
-    .map-node .desc { font-size: clamp(0.75rem, 2vw, 0.9rem); color: var(--text-muted); }
+        .stat-box {
+            width: 30%;
+        }
 
-    /* Combat Screen */
-    #combat-screen { padding: 10px; display: flex; flex-direction: column; gap: 10px; }
-    
-    .hud { display: flex; justify-content: space-between; gap: 10px; }
-    .entity-hud { flex: 1; display: flex; flex-direction: column; gap: 5px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
-    
-    .combat-arena {
-        flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px;
-        position: relative;
-    }
-    
-    .enemy-sprite {
-        font-size: clamp(4rem, 15vh, 8rem);
-        filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
-        animation: float 3s ease-in-out infinite;
-        position: relative;
-    }
+        .stat-name {
+            font-weight: bold;
+            font-size: 1.5vw;
+            margin-bottom: 5px;
+        }
 
-    .math-board {
-        background: #fdf6e3; color: #1e293b; border: 4px solid var(--accent); border-radius: 12px;
-        padding: clamp(10px, 3vw, 20px); width: 100%; max-width: 600px; text-align: center;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    }
-    .question-text { font-size: clamp(1.5rem, 5vw, 2.5rem); font-weight: 900; margin: 10px 0; letter-spacing: 1px; }
-    
-    .timer-wrap { margin-bottom: 10px; }
+        .bar-container {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 5px;
+            border: 2px solid #555;
+        }
 
-    .answers-grid {
-        display: grid; grid-template-columns: 1fr 1fr; gap: clamp(10px, 2vw, 15px);
-        width: 100%; max-width: 600px; margin: 0 auto;
-    }
-    .answer-btn {
-        background: var(--panel-bg); color: var(--text); border: 2px solid var(--primary);
-        border-radius: 12px; padding: clamp(15px, 3vh, 25px); font-size: clamp(1.2rem, 4vw, 1.8rem);
-        font-weight: bold; cursor: pointer; transition: all 0.1s;
-        display: flex; justify-content: center; align-items: center;
-    }
-    .answer-btn:active { transform: scale(0.95); }
-    .answer-btn.correct { background: var(--correct); border-color: #059669; }
-    .answer-btn.wrong { background: var(--wrong); border-color: #be123c; }
-    .answer-btn.disabled { opacity: 0.3; pointer-events: none; }
+        .bar {
+            height: 100%;
+            transition: width 0.3s ease-in-out; /* GDD 18: UI Animations */
+        }
 
-    .combat-controls {
-        display: flex; justify-content: space-between; width: 100%; max-width: 600px; margin: 0 auto; gap: 10px;
-    }
-    .tool-btn {
-        flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: bold; color: white; cursor: pointer;
-        display: flex; align-items: center; justify-content: center; gap: 5px; font-size: clamp(0.8rem, 2.5vw, 1rem);
-    }
-    .hint-btn { background: var(--mp-color); }
-    .flee-btn { background: #64748b; }
+        .hp-bar { background-color: var(--health-color); width: 100%; }
+        .mp-bar { background-color: var(--mana-color); width: 100%; }
 
-    /* Overlay (Explanations) */
-    .overlay {
-        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0,0,0,0.85); backdrop-filter: blur(4px);
-        display: none; flex-direction: column; justify-content: center; align-items: center;
-        z-index: 100; padding: 20px; text-align: center;
-    }
-    .overlay.active { display: flex; animation: fadeIn 0.2s; }
-    .dialog-box {
-        background: var(--panel-bg); border: 2px solid var(--primary); border-radius: 16px;
-        padding: 30px; max-width: 500px; width: 100%;
-    }
-    .dialog-title { font-size: 1.5rem; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px;}
-    .dialog-text { font-size: 1.2rem; margin-bottom: 25px; line-height: 1.5; color: var(--text-muted); }
+        #combat-area {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
 
-    /* Damage Texts & Particles */
-    .dmg-text {
-        position: absolute; font-weight: 900; font-size: 2rem; pointer-events: none;
-        animation: floatUp 1s ease-out forwards; text-shadow: 0 0 4px #000;
-    }
+        /* Combat Focus (GDD 13) */
+        #math-modal {
+            background-color: var(--parchment);
+            color: #333;
+            padding: 20px;
+            border-radius: 15px;
+            border: 4px solid var(--gold);
+            text-align: center;
+            width: 50%;
+            max-width: 500px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+        }
 
-    /* Animations */
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
-    @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-50px) scale(1.5); } }
+        #timer-bar-container {
+            width: 100%;
+            height: 10px;
+            background: #ccc;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
 
-    /* Landscape specific tweaks */
-    @media (orientation: landscape) and (max-height: 600px) {
-        .combat-arena { flex-direction: row; justify-content: space-evenly; }
-        .enemy-sprite { font-size: clamp(3rem, 20vh, 6rem); margin-bottom: 0; }
-        .math-board { max-width: 45%; }
-        .answers-grid { max-width: 45%; }
-    }
-</style>
+        #timer-bar {
+            height: 100%;
+            background: #2ed573;
+            width: 100%;
+        }
+
+        #equation {
+            font-size: 4vw;
+            font-weight: bold;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        #answer-display {
+            font-size: 3vw;
+            height: 4vw;
+            border-bottom: 3px solid #333;
+            margin-bottom: 20px;
+            color: var(--accent-color);
+        }
+
+        /* Dynamic Numpad (GDD 13 & 19) */
+        #numpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .num-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 2vw;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+
+        .num-btn:active {
+            background: var(--secondary-bg);
+        }
+
+        .num-btn.special {
+            background: var(--text-light);
+        }
+
+        /* Feedback Animation */
+        .shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        /* --- End Screen --- */
+        #end-screen {
+            justify-content: center;
+            align-items: center;
+            background: rgba(0,0,0,0.9);
+            text-align: center;
+        }
+
+        #end-message {
+            font-size: 4vw;
+            margin-bottom: 20px;
+        }
+
+        #stars {
+            font-size: 5vw;
+            color: var(--gold);
+            margin-bottom: 30px;
+        }
+    </style>
 </head>
 <body>
 
-<div id="app">
-    <!-- SCREEN 1: SPLASH / MAIN MENU -->
-    <div id="screen-menu" class="screen active center-col">
-        <h1>MAGIC MATH</h1>
-        <h2 style="color: var(--text-muted); font-size: 1.2rem;">Grade 7 Math RPG</h2>
-        
-        <div class="panel" style="width: 100%; max-width: 600px;">
-            <div class="stats-header">
-                <div class="stat-box"><span>Level</span><span class="stat-value" id="menu-lvl">1</span></div>
-                <div class="stat-box"><span>Rank</span><span class="stat-value" id="menu-rank" style="font-size: 1rem;">Novice</span></div>
-                <div class="stat-box"><span>Stars</span><span class="stat-value" id="menu-stars">0</span></div>
-                <div class="stat-box"><span>Gold</span><span class="stat-value" id="menu-gold">0</span></div>
-            </div>
-            <div style="margin-top: 15px;">
-                <div class="stat-labels"><span>XP to next Level</span><span id="menu-xp-text">0/100</span></div>
-                <div class="stat-bar-container"><div id="menu-xp-bar" class="stat-bar xp-fill" style="width: 0%;"></div></div>
-            </div>
+    <div id="game-container">
+        <!-- 1. Main Menu Screen -->
+        <div id="menu-screen" class="screen active">
+            <h1>MAGIC MATH</h1>
+            <p style="margin-bottom: 30px; font-size: 1.5vw;">Chapter 1: The Shores of Absolute Value</p>
+            <button class="btn" onclick="startGame()">Enter the Void</button>
         </div>
 
-        <button class="btn" onclick="openMap()">⚔️ Enter Arithmia</button>
-        <button class="btn secondary" onclick="resetSave()" style="font-size: 0.9rem; padding: 10px 20px;">Reset Progress</button>
-    </div>
-
-    <!-- SCREEN 2: WORLD MAP -->
-    <div id="screen-map" class="screen center-col">
-        <h2>Realm of Arithmia</h2>
-        <div class="map-grid">
-            <div class="map-node" onclick="startLevel(0)">
-                <div class="icon">🏝️</div>
-                <div class="title">Integer Isles</div>
-                <div class="desc">Ch 1: Abs & Integers</div>
-            </div>
-            <div class="map-node" onclick="startLevel(1)">
-                <div class="icon">🌲</div>
-                <div class="title">Fraction Forest</div>
-                <div class="desc">Ch 2: Frac, GCD, LCM</div>
-            </div>
-            <div class="map-node" onclick="startLevel(2)">
-                <div class="icon">🏜️</div>
-                <div class="title">Decimal Desert</div>
-                <div class="desc">Ch 3: Decimals</div>
-            </div>
-            <div class="map-node" onclick="startLevel(3)">
-                <div class="icon">🏰</div>
-                <div class="title">Equation Spire</div>
-                <div class="desc">Ch 4: Linear Equations</div>
-            </div>
-        </div>
-        <button class="btn secondary" onclick="switchScreen('menu')">⬅ Back to Menu</button>
-    </div>
-
-    <!-- SCREEN 3: COMBAT -->
-    <div id="screen-combat" class="screen">
-        <div class="hud">
-            <div class="entity-hud">
-                <div class="stat-labels"><span>🧙‍♂️ You (Lvl <span id="cb-lvl">1</span>)</span><span id="cb-hp-text">100/100</span></div>
-                <div class="stat-bar-container"><div id="cb-hp-bar" class="stat-bar hp-fill"></div></div>
-                <div class="stat-labels" style="margin-top: 5px;"><span>✨ MP</span><span id="cb-mp-text">50/50</span></div>
-                <div class="stat-bar-container"><div id="cb-mp-bar" class="stat-bar mp-fill"></div></div>
-            </div>
-            <div class="entity-hud" style="align-items: flex-end; text-align: right;">
-                <div class="stat-labels"><span id="cb-enemy-name" style="color: var(--accent);">Boss</span><span id="cb-enemy-hp-text">100/100</span></div>
-                <div class="stat-bar-container" style="direction: rtl;"><div id="cb-enemy-hp-bar" class="stat-bar hp-fill"></div></div>
-                <div style="font-size: 0.8rem; margin-top: 5px; color: var(--text-muted);">Questions: <span id="cb-q-count">1/10</span></div>
-            </div>
-        </div>
-
-        <div class="combat-arena" id="combat-arena">
-            <div class="enemy-sprite" id="enemy-sprite">🐂</div>
-            
-            <div style="display:flex; flex-direction: column; gap: 15px; width: 100%; align-items: center;">
-                <div class="math-board" id="math-board">
-                    <div class="timer-wrap">
-                        <div class="stat-bar-container" style="height: 8px;"><div id="timer-bar" class="stat-bar timer-fill"></div></div>
+        <!-- 2. Combat Screen -->
+        <div id="combat-screen" class="screen">
+            <!-- HUD -->
+            <div id="hud">
+                <div class="stat-box">
+                    <div class="stat-name">Aria (Apprentice)</div>
+                    <div class="bar-container"><div id="player-hp" class="bar hp-bar"></div></div>
+                    <div class="bar-container"><div id="player-mp" class="bar mp-bar"></div></div>
+                </div>
+                <div class="stat-box" style="text-align: right;">
+                    <div class="stat-name">The Minus Minotaur</div>
+                    <div class="bar-container" style="justify-content: flex-end; display: flex;">
+                        <div id="enemy-hp" class="bar hp-bar"></div>
                     </div>
-                    <div style="color: #64748b; font-size: 0.9rem; font-weight: bold; text-transform: uppercase;" id="q-topic">Topic</div>
-                    <div class="question-text" id="question-text">Loading...</div>
                 </div>
+            </div>
 
-                <div class="answers-grid" id="answers-grid">
-                    <button class="answer-btn" onclick="checkAnswer(0)" id="btn-0">A</button>
-                    <button class="answer-btn" onclick="checkAnswer(1)" id="btn-1">B</button>
-                    <button class="answer-btn" onclick="checkAnswer(2)" id="btn-2">C</button>
-                    <button class="answer-btn" onclick="checkAnswer(3)" id="btn-3">D</button>
-                </div>
-
-                <div class="combat-controls">
-                    <button class="tool-btn flee-btn" onclick="openMap()">🏃 Flee</button>
-                    <button class="tool-btn hint-btn" onclick="useHint()" id="hint-btn">🦉 Hint (15 MP)</button>
+            <!-- Combat Area / Focus -->
+            <div id="combat-area">
+                <div id="math-modal">
+                    <div id="timer-bar-container">
+                        <div id="timer-bar"></div>
+                    </div>
+                    <div id="equation">-5 + 8 = ?</div>
+                    <div id="answer-display"></div>
+                    
+                    <!-- Numpad -->
+                    <div id="numpad">
+                        <button class="num-btn" onclick="inputNumber(7)">7</button>
+                        <button class="num-btn" onclick="inputNumber(8)">8</button>
+                        <button class="num-btn" onclick="inputNumber(9)">9</button>
+                        <button class="num-btn" onclick="inputNumber(4)">4</button>
+                        <button class="num-btn" onclick="inputNumber(5)">5</button>
+                        <button class="num-btn" onclick="inputNumber(6)">6</button>
+                        <button class="num-btn" onclick="inputNumber(1)">1</button>
+                        <button class="num-btn" onclick="inputNumber(2)">2</button>
+                        <button class="num-btn" onclick="inputNumber(3)">3</button>
+                        <button class="num-btn special" onclick="inputMinus()">-</button>
+                        <button class="num-btn" onclick="inputNumber(0)">0</button>
+                        <button class="num-btn special" onclick="submitAnswer()">Cast</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- OVERLAYS -->
-    <div id="overlay-feedback" class="overlay">
-        <div class="dialog-box">
-            <div class="dialog-title" id="fb-title">🦉 Decimal the Owl says:</div>
-            <div class="dialog-text" id="fb-text">Explanation goes here.</div>
-            <button class="btn" onclick="nextTurn()">Continue</button>
+        <!-- 3. Victory/Defeat Screen -->
+        <div id="end-screen" class="screen">
+            <div id="end-message">Victory!</div>
+            <div id="stars">★★★</div>
+            <p id="accuracy-stat" style="margin-bottom: 20px; font-size: 1.5vw;"></p>
+            <button class="btn" onclick="resetGame()">Return to Map</button>
         </div>
     </div>
 
-    <div id="overlay-end" class="overlay">
-        <div class="dialog-box" style="text-align: center;">
-            <h2 id="end-title" style="font-size: 3rem; margin-bottom: 10px;">Victory!</h2>
-            <div id="end-stars" style="font-size: 3rem; color: var(--accent); margin-bottom: 10px; letter-spacing: 10px;">★★★</div>
-            <div class="dialog-text" id="end-stats">XP: +50 | Gold: +20</div>
-            <button class="btn" onclick="openMap()" style="width: 100%;">Return to Map</button>
-        </div>
-    </div>
-</div>
+    <script>
+        /* --- GDD 7 & 9: Player Progression & Game Mechanics --- */
+        let player = { maxHp: 100, hp: 100, mp: 50 };
+        let enemy = { maxHp: 100, hp: 100, name: "Minus Minotaur" };
+        
+        // Combat State
+        let currentAnswer = "";
+        let expectedAnswer = 0;
+        let timerInterval;
+        let timeLeft = 10;
+        const TIME_LIMIT = 10; // 10 seconds to answer
+        let questionsAsked = 0;
+        let questionsCorrect = 0;
 
-<script>
-/* ==========================================================================
-   GAME STATE & CONFIGURATION
-   ========================================================================== */
-const DEFAULT_STATE = {
-    level: 1, xp: 0,
-    maxHp: 100, maxMp: 50,
-    gold: 0, stars: 0
-};
-let pState = JSON.parse(localStorage.getItem('magicMathSave')) || { ...DEFAULT_STATE };
+        // DOM Elements
+        const screens = {
+            menu: document.getElementById('menu-screen'),
+            combat: document.getElementById('combat-screen'),
+            end: document.getElementById('end-screen')
+        };
+        const displays = {
+            playerHp: document.getElementById('player-hp'),
+            enemyHp: document.getElementById('enemy-hp'),
+            equation: document.getElementById('equation'),
+            answer: document.getElementById('answer-display'),
+            timerBar: document.getElementById('timer-bar'),
+            mathModal: document.getElementById('math-modal')
+        };
 
-const CHAPTERS = [
-    { name: "Minus Minotaur", sprite: "🐂", topic: "Integers", hp: 100 },
-    { name: "Fractured Ent", sprite: "🌳", topic: "Fractions & GCD/LCM", hp: 120 },
-    { name: "Sand-Serpent", sprite: "🐍", topic: "Decimals", hp: 140 },
-    { name: "The Nullifier", sprite: "🕳️", topic: "Linear Equations", hp: 180 }
-];
-
-let cState = { // Combat State
-    chapterId: 0,
-    questions: [],
-    qIndex: 0,
-    enemyHp: 100,
-    enemyMaxHp: 100,
-    hp: 100, mp: 50,
-    timer: null,
-    timeLeft: 20,
-    correctIdx: -1,
-    isProcessing: false,
-    correctCount: 0
-};
-
-/* ==========================================================================
-   AUDIO ENGINE (Web Audio API)
-   ========================================================================== */
-const Audio = (function() {
-    let ctx = null;
-    let enabled = false;
-
-    function init() {
-        if(!ctx) {
-            ctx = new (window.AudioContext || window.webkitAudioContext)();
-            enabled = true;
+        function switchScreen(screenName) {
+            Object.values(screens).forEach(s => s.classList.remove('active'));
+            screens[screenName].classList.add('active');
         }
-        if(ctx.state === 'suspended') ctx.resume();
-    }
 
-    function playTone(freq, type, duration, vol=0.1) {
-        if(!enabled || !ctx) return;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, ctx.currentTime);
-        gain.gain.setValueAtTime(vol, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + duration);
-    }
-
-    return {
-        init,
-        click: () => playTone(600, 'sine', 0.1, 0.1),
-        correct: () => { playTone(523.25, 'sine', 0.1, 0.1); setTimeout(()=>playTone(659.25, 'sine', 0.2, 0.15), 100); },
-        wrong: () => playTone(150, 'sawtooth', 0.3, 0.15),
-        damage: () => playTone(100, 'square', 0.2, 0.2),
-        hit: () => playTone(800, 'square', 0.1, 0.1)
-    };
-})();
-
-/* ==========================================================================
-   QUESTION GENERATOR (Grade 7 Mathayom 1 Sem 1)
-   ========================================================================== */
-const Rand = {
-    int: (min, max) => Math.floor(Math.random() * (max - min + 1)) + min,
-    pick: (arr) => arr[Math.floor(Math.random() * arr.length)],
-    shuffle: (arr) => {
-        for(let i=arr.length-1; i>0; i--){
-            const j=Math.floor(Math.random()*(i+1));
-            [arr[i], arr[j]]=[arr[j], arr[i]];
+        function startGame() {
+            // Reset Stats
+            player.hp = player.maxHp;
+            enemy.hp = enemy.maxHp;
+            questionsAsked = 0;
+            questionsCorrect = 0;
+            updateHUD();
+            switchScreen('combat');
+            nextTurn();
         }
-        return arr;
-    }
-};
 
-const MathGen = {
-    // Generate distractors based on common mistakes
-    makeDistractors: (ans, type, range=5) => {
-        let opts = new Set([ans]);
-        while(opts.size < 4) {
-            let offset = Rand.int(-range, range);
-            if(offset===0) offset=1;
-            if(type === 'int') opts.add(ans + offset);
-            else if(type === 'sign') opts.add(-ans);
-            else if(type === 'dec') opts.add(Math.round((ans + offset*0.1)*100)/100);
-            else if(type === 'frac') opts.add(ans + offset);
+        function updateHUD() {
+            displays.playerHp.style.width = `${(player.hp / player.maxHp) * 100}%`;
+            displays.enemyHp.style.width = `${(enemy.hp / enemy.maxHp) * 100}%`;
         }
-        let arr = Array.from(opts);
-        if(opts.size>4) arr=arr.slice(0,4); // safety
-        return arr;
-    },
-    ch0_Integers: () => {
-        const op = Rand.pick(['+','-','*']);
-        let a, b, ans, exp;
-        if(op === '+') {
-            a = Rand.int(-20, 20); b = Rand.int(-20, 20); ans = a + b;
-            exp = `When adding integers, if signs differ, subtract the smaller absolute value from the larger and keep the sign of the larger.`;
-        } else if(op === '-') {
-            a = Rand.int(-20, 20); b = Rand.int(-20, 20); ans = a - b;
-            exp = `Subtracting an integer is the same as adding its opposite: ${a} - (${b}) = ${a} + (${-b}).`;
-        } else {
-            a = Rand.int(-12, 12); b = Rand.int(-12, 12); ans = a * b;
-            exp = `Multiplying integers: same signs = positive result, different signs = negative result.`;
+
+        /* --- GDD 8: Mathematics Learning Objectives (Grade 7 Integers) --- */
+        function generateProblem() {
+            // Generates positive and negative integer addition/subtraction
+            const num1 = Math.floor(Math.random() * 21) - 10; // -10 to 10
+            const num2 = Math.floor(Math.random() * 21) - 10;
+            const isAddition = Math.random() > 0.5;
+
+            if (isAddition) {
+                expectedAnswer = num1 + num2;
+                displays.equation.innerText = `${num1} + ${num2 < 0 ? `(${num2})` : num2} = ?`;
+            } else {
+                expectedAnswer = num1 - num2;
+                displays.equation.innerText = `${num1} - ${num2 < 0 ? `(${num2})` : num2} = ?`;
+            }
+
+            currentAnswer = "";
+            displays.answer.innerText = "";
+            questionsAsked++;
         }
-        let bStr = b < 0 ? `(${b})` : b;
-        let opts = MathGen.makeDistractors(ans, 'int');
-        if(op==='*') opts[1] = -ans; // Common sign mistake
-        return { q: `${a} ${op} ${bStr} = ?`, ans: ans.toString(), opts: Rand.shuffle(opts.map(String)), exp, topic: "Integers" };
-    },
-    ch1_Fractions: () => {
-        const type = Rand.pick(['gcd', 'lcm', 'add']);
-        if(type==='gcd') {
-            let gcd = Rand.int(2,8); let a = gcd * Rand.int(2,5); let b = gcd * Rand.int(2,6);
-            if(a===b) b += gcd;
-            let realGcd = function(x,y){return y===0?x:realGcd(y,x%y)}(a,b);
-            let opts = MathGen.makeDistractors(realGcd, 'int');
-            return { q: `Find GCD of ${a} & ${b}`, ans: realGcd.toString(), opts: Rand.shuffle(opts.map(String)), exp: `The Greatest Common Divisor is the largest number that divides both evenly.`, topic: "GCD" };
-        } else if (type==='lcm') {
-            let a = Rand.int(3,8); let b = Rand.int(4,10);
-            let gcd = function(x,y){return y===0?x:realGcd(y,x%y)}(a,b);
-            let lcm = Math.abs(a*b)/gcd;
-            let opts = MathGen.makeDistractors(lcm, 'int', 10);
-            return { q: `Find LCM of ${a} & ${b}`, ans: lcm.toString(), opts: Rand.shuffle(opts.map(String)), exp: `The Least Common Multiple is the smallest number that is a multiple of both.`, topic: "LCM" };
-        } else {
-            let den = Rand.pick([2,3,4,5]); let n1 = Rand.int(1, den*2); let n2 = Rand.int(1, den*2);
-            let ans = n1+n2;
-            let opts = MathGen.makeDistractors(ans, 'frac').map(x => `${x}/${den}`);
-            return { q: `${n1}/${den} + ${n2}/${den} = ?`, ans: `${ans}/${den}`, opts: Rand.shuffle(opts), exp: `To add fractions with the same denominator, add the numerators and keep the denominator.`, topic: "Fractions" };
+
+        function startTimer() {
+            timeLeft = TIME_LIMIT;
+            displays.timerBar.style.width = '100%';
+            displays.timerBar.style.backgroundColor = '#2ed573';
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft -= 0.1;
+                const percentage = (timeLeft / TIME_LIMIT) * 100;
+                displays.timerBar.style.width = `${percentage}%`;
+
+                if (percentage < 30) {
+                    displays.timerBar.style.backgroundColor = '#ff4757'; // Turn red when low
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleWrongAnswer(); // "Fizzle" out of time
+                }
+            }, 100);
         }
-    },
-    ch2_Decimals: () => {
-        const op = Rand.pick(['+','-']);
-        let a = Rand.int(10, 99) / 10; // 1.0 to 9.9
-        let b = Rand.int(10, 99) / 10;
-        let ans = op === '+' ? (a*10 + b*10)/10 : (a*10 - b*10)/10;
-        let opts = MathGen.makeDistractors(ans, 'dec');
-        return { q: `${a.toFixed(1)} ${op} ${b.toFixed(1)} = ?`, ans: ans.toFixed(1), opts: Rand.shuffle(opts.map(x=>x.toFixed(1))), exp: `Align the decimal points when adding or subtracting decimals.`, topic: "Decimals" };
-    },
-    ch3_Equations: () => {
-        // ax + b = c  => ans = (c-b)/a
-        let ans = Rand.int(-5, 10);
-        let a = Rand.int(2, 6);
-        let b = Rand.int(-10, 15);
-        let c = a * ans + b;
-        let bStr = b < 0 ? `- ${Math.abs(b)}` : `+ ${b}`;
-        let opts = MathGen.makeDistractors(ans, 'int');
-        return { q: `${a}x ${bStr} = ${c}. Find x.`, ans: ans.toString(), opts: Rand.shuffle(opts.map(String)), exp: `Isolate x: First undo addition/subtraction, then divide by the coefficient (${a}).`, topic: "Algebra" };
-    }
-};
 
-function generateQuestions(chapterId) {
-    let qs = [];
-    for(let i=0; i<10; i++) {
-        if(chapterId === 0) qs.push(MathGen.ch0_Integers());
-        else if(chapterId === 1) qs.push(MathGen.ch1_Fractions());
-        else if(chapterId === 2) qs.push(MathGen.ch2_Decimals());
-        else if(chapterId === 3) qs.push(MathGen.ch3_Equations());
-    }
-    return qs;
-}
-
-/* ==========================================================================
-   CORE LOGIC & UI UPDATES
-   ========================================================================== */
-function saveGame() { localStorage.setItem('magicMathSave', JSON.stringify(pState)); }
-function resetSave() { 
-    if(confirm("Reset all progress?")) { pState = { ...DEFAULT_STATE }; saveGame(); updateMenuUI(); }
-}
-function getRank(stars) {
-    if(stars<10) return "Novice"; if(stars<25) return "Apprentice";
-    if(stars<50) return "Spellcaster"; if(stars<100) return "Grandmaster";
-    return "Mathemagician";
-}
-function getReqXp(lvl) { return lvl * 100; }
-
-function switchScreen(id) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(`screen-${id}`).classList.add('active');
-    Audio.init();
-}
-
-function updateMenuUI() {
-    pState.maxHp = 100 + (pState.level - 1)*20;
-    pState.maxMp = 50 + (pState.level - 1)*10;
-    pState.rank = getRank(pState.stars);
-    
-    document.getElementById('menu-lvl').innerText = pState.level;
-    document.getElementById('menu-rank').innerText = pState.rank;
-    document.getElementById('menu-stars').innerText = pState.stars;
-    document.getElementById('menu-gold').innerText = pState.gold;
-    
-    let reqXp = getReqXp(pState.level);
-    document.getElementById('menu-xp-text').innerText = `${pState.xp}/${reqXp}`;
-    document.getElementById('menu-xp-bar').style.width = `${(pState.xp / reqXp)*100}%`;
-}
-
-function openMap() {
-    Audio.click(); updateMenuUI(); switchScreen('map');
-    clearInterval(cState.timer);
-}
-
-/* ==========================================================================
-   COMBAT SYSTEM
-   ========================================================================== */
-function startLevel(chapId) {
-    Audio.click();
-    const boss = CHAPTERS[chapId];
-    cState = {
-        chapterId: chapId,
-        questions: generateQuestions(chapId),
-        qIndex: 0, correctCount: 0,
-        enemyMaxHp: boss.hp, enemyHp: boss.hp,
-        hp: pState.maxHp, mp: pState.maxMp,
-        isProcessing: false, timeLeft: 20
-    };
-    
-    document.getElementById('cb-enemy-name').innerText = boss.name;
-    document.getElementById('enemy-sprite').innerText = boss.sprite;
-    document.getElementById('cb-lvl').innerText = pState.level;
-    
-    updateCombatHUD();
-    switchScreen('combat');
-    loadQuestion();
-}
-
-function updateCombatHUD() {
-    document.getElementById('cb-hp-text').innerText = `${cState.hp}/${pState.maxHp}`;
-    document.getElementById('cb-hp-bar').style.width = `${(cState.hp/pState.maxHp)*100}%`;
-    document.getElementById('cb-mp-text').innerText = `${cState.mp}/${pState.maxMp}`;
-    document.getElementById('cb-mp-bar').style.width = `${(cState.mp/pState.maxMp)*100}%`;
-    
-    document.getElementById('cb-enemy-hp-text').innerText = `${cState.enemyHp}/${cState.enemyMaxHp}`;
-    document.getElementById('cb-enemy-hp-bar').style.width = `${(cState.enemyHp/cState.enemyMaxHp)*100}%`;
-    
-    document.getElementById('hint-btn').disabled = cState.mp < 15;
-}
-
-function loadQuestion() {
-    if(cState.qIndex >= 10 || cState.enemyHp <= 0 || cState.hp <= 0) {
-        endCombat(); return;
-    }
-    
-    cState.isProcessing = false;
-    let q = cState.questions[cState.qIndex];
-    document.getElementById('cb-q-count').innerText = `${cState.qIndex + 1}/10`;
-    document.getElementById('q-topic').innerText = q.topic;
-    document.getElementById('question-text').innerText = q.q;
-    
-    for(let i=0; i<4; i++) {
-        let btn = document.getElementById(`btn-${i}`);
-        btn.innerText = q.opts[i];
-        btn.className = 'answer-btn';
-        if(q.opts[i] === q.ans) cState.correctIdx = i;
-    }
-    
-    cState.timeLeft = 20; // 20s per question
-    startTimer();
-}
-
-function startTimer() {
-    clearInterval(cState.timer);
-    let tb = document.getElementById('timer-bar');
-    cState.timer = setInterval(() => {
-        cState.timeLeft -= 0.1;
-        let pct = (cState.timeLeft / 20) * 100;
-        tb.style.width = `${pct}%`;
-        if(pct < 25) tb.style.background = 'linear-gradient(90deg, #f43f5e, #be123c)';
-        else tb.style.background = 'linear-gradient(90deg, var(--accent), #fbbf24)';
-        
-        if(cState.timeLeft <= 0) {
-            clearInterval(cState.timer);
-            processAnswer(-1); // Timeout
+        function nextTurn() {
+            generateProblem();
+            startTimer();
         }
-    }, 100);
-}
 
-function checkAnswer(idx) {
-    if(cState.isProcessing) return;
-    processAnswer(idx);
-}
-
-function processAnswer(idx) {
-    cState.isProcessing = true;
-    clearInterval(cState.timer);
-    let q = cState.questions[cState.qIndex];
-    
-    // Reveal correct
-    document.getElementById(`btn-${cState.correctIdx}`).classList.add('correct');
-    
-    if(idx === cState.correctIdx) {
-        // CORRECT
-        Audio.correct();
-        cState.correctCount++;
-        let dmg = Math.ceil(cState.enemyMaxHp / 10);
-        cState.enemyHp = Math.max(0, cState.enemyHp - dmg);
-        showDmgText(`-${dmg}`, 'enemy-sprite', '#10b981');
-        document.getElementById('enemy-sprite').style.animation = 'shake 0.4s';
-        setTimeout(() => { document.getElementById('enemy-sprite').style.animation = 'float 3s ease-in-out infinite'; }, 400);
-        
-        updateCombatHUD();
-        setTimeout(() => { cState.qIndex++; loadQuestion(); }, 1200);
-        
-    } else {
-        // WRONG / TIMEOUT
-        Audio.wrong();
-        if(idx !== -1) document.getElementById(`btn-${idx}`).classList.add('wrong');
-        
-        let pDmg = Math.ceil(pState.maxHp * 0.15); // 15% max hp damage
-        cState.hp = Math.max(0, cState.hp - pDmg);
-        showDmgText(`-${pDmg}`, 'combat-arena', '#ef4444');
-        document.getElementById('combat-arena').style.animation = 'shake 0.4s';
-        setTimeout(() => { document.getElementById('combat-arena').style.animation = ''; }, 400);
-        
-        updateCombatHUD();
-        
-        setTimeout(() => {
-            document.getElementById('fb-title').innerHTML = idx === -1 ? '⏳ Time Out!' : '🦉 Decimal the Owl says:';
-            document.getElementById('fb-text').innerText = q.exp;
-            document.getElementById('overlay-feedback').classList.add('active');
-        }, 1000);
-    }
-}
-
-function nextTurn() {
-    Audio.click();
-    document.getElementById('overlay-feedback').classList.remove('active');
-    if(cState.hp <= 0) endCombat();
-    else { cState.qIndex++; loadQuestion(); }
-}
-
-function useHint() {
-    if(cState.mp < 15 || cState.isProcessing) return;
-    Audio.click();
-    cState.mp -= 15;
-    updateCombatHUD();
-    
-    // Disable 2 wrong answers
-    let hidden = 0;
-    let opts = [0,1,2,3];
-    Rand.shuffle(opts);
-    for(let i of opts) {
-        if(i !== cState.correctIdx && hidden < 2) {
-            document.getElementById(`btn-${i}`).classList.add('disabled');
-            document.getElementById(`btn-${i}`).innerText = '';
-            hidden++;
+        /* --- Numpad Logic --- */
+        function inputNumber(num) {
+            currentAnswer += num.toString();
+            displays.answer.innerText = currentAnswer;
         }
-    }
-}
 
-function showDmgText(text, parentId, color) {
-    const parent = document.getElementById(parentId);
-    const el = document.createElement('div');
-    el.className = 'dmg-text';
-    el.innerText = text;
-    el.style.color = color;
-    if(parentId==='combat-arena') { el.style.top='10%'; el.style.left='20%'; }
-    else { el.style.top='-20%'; el.style.left='50%'; el.style.transform='translateX(-50%)'; }
-    parent.appendChild(el);
-    setTimeout(() => el.remove(), 1000);
-}
-
-function endCombat() {
-    let win = cState.enemyHp <= 0;
-    document.getElementById('overlay-end').classList.add('active');
-    let title = document.getElementById('end-title');
-    let starsEl = document.getElementById('end-stars');
-    let stats = document.getElementById('end-stats');
-    
-    if(win) {
-        Audio.correct(); // Play win jingle
-        title.innerText = "Boss Defeated!";
-        title.style.color = "var(--correct)";
-        
-        let stars = 1;
-        if(cState.correctCount >= 8) stars = 2;
-        if(cState.correctCount === 10) stars = 3;
-        
-        starsEl.innerText = "★".repeat(stars) + "☆".repeat(3-stars);
-        
-        let xpGained = stars * 40 + (cState.chapterId * 10);
-        let goldGained = stars * 15;
-        
-        stats.innerText = `XP: +${xpGained} | Gold: +${goldGained}\nAccuracy: ${cState.correctCount}/10`;
-        
-        pState.xp += xpGained;
-        pState.gold += goldGained;
-        pState.stars += stars;
-        
-        // Level up logic
-        let req = getReqXp(pState.level);
-        if(pState.xp >= req) {
-            pState.level++;
-            pState.xp -= req;
-            stats.innerText += `\n🌟 LEVEL UP! 🌟`;
+        function inputMinus() {
+            if (currentAnswer === "") {
+                currentAnswer = "-";
+            } else if (currentAnswer === "-") {
+                currentAnswer = "";
+            } else if (currentAnswer.startsWith("-")) {
+                currentAnswer = currentAnswer.substring(1);
+            } else {
+                currentAnswer = "-" + currentAnswer;
+            }
+            displays.answer.innerText = currentAnswer;
         }
-    } else {
-        Audio.damage(); // Play loss sound
-        title.innerText = "Defeated...";
-        title.style.color = "var(--wrong)";
-        starsEl.innerText = "☆☆☆";
-        stats.innerText = `Keep practicing and try again!\nAccuracy: ${cState.correctCount}/${cState.qIndex}`;
-    }
-    saveGame();
-}
 
-// Init
-window.onload = () => { updateMenuUI(); };
-</script>
+        /* --- Combat Resolution --- */
+        function submitAnswer() {
+            if (currentAnswer === "" || currentAnswer === "-") return;
+            
+            clearInterval(timerInterval);
+            const parsedAnswer = parseInt(currentAnswer, 10);
+
+            if (parsedAnswer === expectedAnswer) {
+                handleCorrectAnswer();
+            } else {
+                handleWrongAnswer();
+            }
+        }
+
+        function handleCorrectAnswer() {
+            questionsCorrect++;
+            enemy.hp -= 34; // Roughly 3 hits to kill for protoype
+            if (enemy.hp < 0) enemy.hp = 0;
+            updateHUD();
+
+            if (enemy.hp === 0) {
+                setTimeout(endGame, 1000);
+            } else {
+                // Brief pause before next question
+                setTimeout(nextTurn, 1000);
+            }
+        }
+
+        function handleWrongAnswer() {
+            // Visual feedback (GDD 14: Positive Reinforcement - soft fail, no harsh buzzers)
+            displays.mathModal.classList.add('shake');
+            setTimeout(() => displays.mathModal.classList.remove('shake'), 500);
+            
+            currentAnswer = "";
+            displays.answer.innerText = "Fizzle...";
+
+            player.hp -= 20; // Take damage
+            if (player.hp < 0) player.hp = 0;
+            updateHUD();
+
+            if (player.hp === 0) {
+                setTimeout(endGame, 1000);
+            } else {
+                setTimeout(nextTurn, 1500);
+            }
+        }
+
+        /* --- GDD 10: Scoring System --- */
+        function endGame() {
+            clearInterval(timerInterval);
+            switchScreen('end');
+            
+            const title = document.getElementById('end-message');
+            const starsDisplay = document.getElementById('stars');
+            const accuracyDisplay = document.getElementById('accuracy-stat');
+            
+            if (player.hp <= 0) {
+                title.innerText = "Defeated...";
+                title.style.color = "var(--health-color)";
+                starsDisplay.innerText = "☆ ☆ ☆";
+                accuracyDisplay.innerText = "Try reviewing Negative Integers!";
+            } else {
+                title.innerText = "Boss Defeated!";
+                title.style.color = "var(--mana-color)";
+                
+                const accuracy = (questionsCorrect / questionsAsked) * 100;
+                accuracyDisplay.innerText = `Accuracy: ${Math.round(accuracy)}%`;
+                
+                if (accuracy === 100) starsDisplay.innerText = "★ ★ ★";
+                else if (accuracy >= 75) starsDisplay.innerText = "★ ★ ☆";
+                else starsDisplay.innerText = "★ ☆ ☆";
+            }
+        }
+
+        function resetGame() {
+            switchScreen('menu');
+        }
+    </script>
 </body>
 </html>
