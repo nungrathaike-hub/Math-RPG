@@ -1,1187 +1,314 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Magic Math - Grade 7 Educational RPG</title>
-    <style>
-        :root {
-            --bg-dark: #0f0c1b;
-            --bg-card: #1d1833;
-            --bg-card-light: #2a2447;
-            --primary-gold: #ffd700;
-            --primary-gold-dark: #c5a000;
-            --accent-blue: #00d2ff;
-            --accent-purple: #9d4edd;
-            --accent-red: #ff4757;
-            --accent-green: #2ed573;
-            --text-light: #f1f2f6;
-            --text-dim: #a4b0be;
-            --font-title: 'Georgia', serif;
-            --font-body: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            --shadow-glow: 0 0 15px rgba(0, 210, 255, 0.4);
-            --shadow-gold: 0 0 15px rgba(255, 215, 0, 0.4);
-            --border-radius: 12px;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: manipulation;
-        }
-
-        body, html {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: var(--bg-dark);
-            font-family: var(--font-body);
-            color: var(--text-light);
-            position: fixed;
-        }
-
-        #app-container {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            background: radial-gradient(circle at center, #1a153a 0%, #08060f 100%);
-        }
-
-        /* Responsive typography & layout bases */
-        .screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            z-index: 10;
-            padding: clamp(10px, 3vw, 25px);
-            overflow-y: auto;
-        }
-
-        .screen.active {
-            opacity: 1;
-            pointer-events: all;
-            z-index: 20;
-        }
-
-        /* Buttons */
-        .btn {
-            background: linear-gradient(135deg, var(--bg-card-light) 0%, var(--bg-card) 100%);
-            border: 2px solid var(--accent-blue);
-            color: var(--text-light);
-            padding: clamp(8px, 2vh, 14px) clamp(16px, 4vw, 28px);
-            font-size: clamp(0.9rem, 2.5vw, 1.2rem);
-            font-weight: bold;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            text-align: center;
-        }
-
-        .btn:hover, .btn:active {
-            transform: translateY(-2px);
-            border-color: var(--primary-gold);
-            box-shadow: var(--shadow-glow);
-        }
-
-        .btn-gold {
-            background: linear-gradient(135deg, var(--primary-gold) 0%, var(--primary-gold-dark) 100%);
-            color: #000;
-            border-color: #fff;
-            box-shadow: var(--shadow-gold);
-        }
-
-        .btn-gold:hover, .btn-gold:active {
-            box-shadow: 0 0 25px rgba(255, 215, 0, 0.8);
-        }
-
-        .btn-red {
-            border-color: var(--accent-red);
-            background: linear-gradient(135deg, #8b0000 0%, #4a0000 100%);
-        }
-
-        /* Title Screen */
-        #title-screen {
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            gap: 20px;
-            background: radial-gradient(circle at center, #2e1d52 0%, #08060f 80%);
-        }
-
-        .title-logo {
-            font-family: var(--font-title);
-            font-size: clamp(2.5rem, 8vw, 5rem);
-            color: var(--primary-gold);
-            text-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(157, 78, 221, 0.8);
-            letter-spacing: 2px;
-            animation: pulse-title 3s infinite alternate;
-        }
-
-        @keyframes pulse-title {
-            0% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.6)); }
-            100% { transform: scale(1.03); filter: drop-shadow(0 0 30px rgba(0, 210, 255, 0.8)); }
-        }
-
-        .subtitle {
-            font-size: clamp(1rem, 3vw, 1.5rem);
-            color: var(--accent-blue);
-            margin-top: -10px;
-        }
-
-        .rank-badge-title {
-            background: var(--bg-card);
-            border: 1px solid var(--primary-gold);
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: clamp(0.8rem, 2vw, 1rem);
-            color: var(--primary-gold);
-            box-shadow: var(--shadow-gold);
-        }
-
-        /* Overworld Map */
-        #map-screen {
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-        }
-
-        .header-bar {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(29, 24, 51, 0.85);
-            backdrop-filter: blur(8px);
-            padding: 10px 15px;
-            border-radius: var(--border-radius);
-            border: 1px solid rgba(255,255,255,0.1);
-            gap: 10px;
-        }
-
-        .player-info-pill {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: clamp(0.8rem, 2vw, 1rem);
-        }
-
-        .stat-badge {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            background: rgba(0,0,0,0.4);
-            padding: 4px 8px;
-            border-radius: 6px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .map-nodes-container {
-            width: 100%;
-            max-width: 900px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-around;
-            align-items: center;
-            position: relative;
-            margin: 20px 0;
-            gap: 15px;
-        }
-
-        .chapter-node {
-            width: 100%;
-            max-width: 500px;
-            background: var(--bg-card);
-            border: 2px solid var(--accent-purple);
-            border-radius: var(--border-radius);
-            padding: 12px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-            position: relative;
-        }
-
-        .chapter-node:hover {
-            transform: scale(1.02);
-            border-color: var(--primary-gold);
-            box-shadow: var(--shadow-gold);
-        }
-
-        .chapter-node.locked {
-            opacity: 0.5;
-            filter: grayscale(0.8);
-            cursor: not-allowed;
-            border-color: #555;
-        }
-
-        .node-info h3 {
-            font-size: clamp(1rem, 2.5vw, 1.3rem);
-            color: var(--primary-gold);
-        }
-
-        .node-info p {
-            font-size: clamp(0.75rem, 1.8vw, 0.9rem);
-            color: var(--text-dim);
-        }
-
-        .stars-container {
-            color: var(--primary-gold);
-            font-size: 1.2rem;
-            letter-spacing: 2px;
-        }
-
-        /* Sanctuary / Inventory Screen */
-        .sanctuary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 15px;
-            width: 100%;
-            max-width: 1000px;
-            margin: 15px auto;
-        }
-
-        .panel-card {
-            background: var(--bg-card);
-            border: 1px solid var(--accent-purple);
-            border-radius: var(--border-radius);
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .panel-card h2 {
-            font-size: 1.2rem;
-            color: var(--accent-blue);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding-bottom: 6px;
-        }
-
-        .item-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--bg-card-light);
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-        }
-
-        /* Combat Battle Screen */
-        #battle-screen {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 10px;
-            gap: 10px;
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-
-        .battle-arena {
-            width: 100%;
-            height: clamp(180px, 30vh, 320px);
-            background: rgba(15, 12, 27, 0.6);
-            border-radius: var(--border-radius);
-            border: 1px solid rgba(255,255,255,0.15);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            padding: 20px clamp(10px, 5vw, 60px);
-        }
-
-        #battle-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        .combatant {
-            position: relative;
-            z-index: 2;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            width: clamp(100px, 25vw, 160px);
-        }
-
-        .sprite {
-            width: clamp(70px, 18vw, 120px);
-            height: clamp(70px, 18vw, 120px);
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.7));
-            transition: transform 0.2s ease;
-        }
-
-        .player-sprite {
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="30" r="20" fill="%23ffd700"/><path d="M20,90 Q50,40 80,90 Z" fill="%2300d2ff"/><polygon points="50,5 35,25 65,25" fill="%239d4edd"/><circle cx="50" cy="12" r="4" fill="%23ffd700"/></svg>');
-        }
-
-        .boss-sprite {
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,10 90,80 10,80" fill="%23ff4757"/><circle cx="50" cy="50" r="25" fill="%231d1833"/><circle cx="50" cy="50" r="10" fill="%23ffd700"/><path d="M30,30 L10,10 M70,30 L90,10" stroke="%23ff4757" stroke-width="5"/></svg>');
-        }
-
-        .vitals-box {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            border-radius: 8px;
-            padding: 6px;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-
-        .vitals-name {
-            font-size: clamp(0.75rem, 1.8vw, 0.9rem);
-            font-weight: bold;
-            color: var(--primary-gold);
-            margin-bottom: 4px;
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .bar-container {
-            width: 100%;
-            height: 10px;
-            background: #333;
-            border-radius: 5px;
-            overflow: hidden;
-            margin-bottom: 3px;
-            position: relative;
-        }
-
-        .bar-fill {
-            height: 100%;
-            width: 100%;
-            transition: width 0.3s ease-out;
-        }
-
-        .hp-fill { background: linear-gradient(90deg, #ff4757, #2ed573); }
-        .mp-fill { background: linear-gradient(90deg, #5352ed, #00d2ff); }
-
-        /* Problem & Action Panel */
-        .action-panel {
-            background: var(--bg-card);
-            border: 2px solid var(--accent-purple);
-            border-radius: var(--border-radius);
-            padding: clamp(10px, 2.5vw, 18px);
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.6);
-            z-index: 5;
-        }
-
-        .problem-card {
-            background: var(--bg-card-light);
-            padding: 12px clamp(10px, 3vw, 20px);
-            border-radius: 8px;
-            border-left: 4px solid var(--accent-blue);
-            min-height: 60px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .problem-text {
-            font-size: clamp(1rem, 2.5vw, 1.25rem);
-            font-weight: bold;
-            color: #fff;
-            line-height: 1.4;
-        }
-
-        .options-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-
-        @media (max-width: 500px) {
-            .options-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .option-btn {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.2);
-            padding: clamp(10px, 2vh, 14px);
-            font-size: clamp(0.9rem, 2vw, 1.1rem);
-            color: var(--text-light);
-            border-radius: 8px;
-            cursor: pointer;
-            text-align: left;
-            transition: all 0.2s ease;
-        }
-
-        .option-btn:hover {
-            background: var(--bg-card-light);
-            border-color: var(--accent-blue);
-        }
-
-        .battle-controls-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        /* Overlay Canvas / Scratchpad Drawer */
-        #scratchpad-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(15, 12, 27, 0.95);
-            z-index: 100;
-            display: none;
-            flex-direction: column;
-            padding: 15px;
-        }
-
-        #scratchpad-overlay.active {
-            display: flex;
-        }
-
-        .scratchpad-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        #scratch-canvas {
-            flex-grow: 1;
-            background: #ffffff;
-            border-radius: var(--border-radius);
-            cursor: crosshair;
-            touch-action: none;
-        }
-
-        /* Modal Dialogs */
-        .modal-overlay {
-            position: fixed;
-            top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(5px);
-            z-index: 150;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal-box {
-            background: var(--bg-card);
-            border: 2px solid var(--primary-gold);
-            border-radius: var(--border-radius);
-            padding: 25px;
-            max-width: 500px;
-            width: 100%;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            box-shadow: var(--shadow-gold);
-        }
-
-        .modal-title {
-            font-size: 1.5rem;
-            color: var(--primary-gold);
-            font-family: var(--font-title);
-        }
-
-        .explanation-box {
-            background: rgba(255,71,87,0.15);
-            border: 1px solid var(--accent-red);
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            color: #ffdae0;
-            text-align: left;
-            line-height: 1.4;
-        }
-
-        /* Floating FX */
-        .dmg-text {
-            position: absolute;
-            font-weight: bold;
-            font-size: 1.5rem;
-            animation: floatUp 0.8s ease-out forwards;
-            pointer-events: none;
-            z-index: 50;
-        }
-
-        @keyframes floatUp {
-            0% { opacity: 1; transform: translateY(0) scale(1); }
-            50% { transform: translateY(-20px) scale(1.3); }
-            100% { opacity: 0; transform: translateY(-40px) scale(0.8); }
-        }
-
-        /* Responsive Utilities */
-        @media (max-width: 600px) {
-            .header-bar { flex-direction: column; align-items: flex-start; gap: 5px; }
-            .battle-arena { height: 180px; padding: 10px; }
-            .combatant { width: 90px; }
-            .sprite { width: 60px; height: 60px; }
-        }
-    </style>
-</head>
-<body>
-
-<div id="app-container">
-
-    <!-- 1. TITLE SCREEN -->
-    <div id="title-screen" class="screen active">
-        <div class="title-logo">MAGIC MATH</div>
-        <div class="subtitle">Arithmetica's Last Mathemancer</div>
-        <div class="rank-badge-title" id="title-rank-display">Rank: Novice Counter</div>
-        <div style="display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 280px; margin-top: 15px;">
-            <button class="btn btn-gold" id="btn-start-game">START ADVENTURE</button>
-            <button class="btn" id="btn-open-sanctuary">SANCTUARY & GEAR</button>
-        </div>
-        <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 20px;">
-            Grade 7 (Mathayom 1) Curriculum Aligned
-        </div>
+<!doctype html>
+<html lang="en"><head><script>window["__codeletBootstrap__"]=JSON.parse('{"A":"A","B":"20260805-23-5ef3adf","C":{"Abril Fatface":"YACgEZbkUVE,0","Alfa Slab One":"YACgEYS9sJU,0","Anton":"YACgEcYqQ-A,0","Archivo":"YAHO2-t-jNE,0","Arial":"YAGyDvJ_4Ts,0","Bebas Neue":"YACgESME5ew,0","Bricolage Grotesque":"YAFyMcdwzpc,0","Canva Sans":"YAFLd8sKbwc,2","Caveat":"YALBs2ploWQ,0","Comic Sans MS":"YAHO2VMiyZo,0","Cormorant Garamond":"YAFdJhX-538,0","Courier New":"YAGzXiGs0_8,0","DM Sans":"YAD1aU3sLnI,0","DM Serif Display":"YAD1aYG82rc,0","Forum":"YACgEcnnqB4,0","Fraunces":"YAEul-FRQw4,0","Georgia":"YAGzXkO0pEM,0","Helvetica Neue":"YAFcf6CtJfI,0","Impact":"YAFcfnjI7Vk,0","Inter":"YAFdJvSyp_k,3","Iowan Old Style":"YAGNIFa8j9o,0","Jacques Francois":"YAHO2a5g66Q,0","JetBrains Mono":"YAFdJksXcAk,0","Libre Baskerville":"YACgEUFdPdA,0","Manrope":"YAHO2b2feC4,0","Merriweather":"YACgEXvHxxs,0","Montserrat":"YADLjI9qxTA,0","Nunito":"YACgEX8C5Gg,0","Oleo Script":"YACgEQQ14jI,0","Phantom Sans":"YAHO2E8Pb88,0","Playfair Display":"YACgEYmuCJE,0","Poppins":"YAFdJjbTu24,1","Press Start 2P":"YAFyGr-8pmQ,0","Quicksand":"YADWjpfPmdk,0","Raleway":"YACgEVg3xZg,0","Segoe UI":"YAHNdRD1Klw,0","Source Sans 3":"YAG4lO1Mj10,0","Spectral":"YAHO2rVUHIM,0","Times New Roman":"YAGzXW3gftg,0","Times":"YAGzXW3gftg,0","Ubuntu":"YACgERDU--Q,0","Work Sans":"YAGXhLOKv44,0","Yellowtail":"YACgEYG4kG4,0","ui-monospace":"YADlN8CFZ8Q,0","ui-sans-serif":"YACkoN-xg4g,0"}}');</script><script src="/_sdk/7949ff62d67710d5.telemetry_sdk.js" integrity="sha512-KIvXA82Di44YY/RH9/63A9MuTuavYgDFG8PfErJn7Wli4K0LAOk+coo/aPXk3+ZNL96nHh9VYD4PE+fLes+laQ=="></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Magic Math</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&amp;family=Fredoka:wght@500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    :root { --ink:#f9f7ff; --gold:#ffd76e; --purple:#5f3bbf; --panel:rgba(20,18,67,.78); }
+    * { box-sizing:border-box; }
+    body { margin:0; width:100%; min-height:100%; font-family:"DM Sans",sans-serif; color:var(--ink); overflow-x:hidden; }
+    button,input { font:inherit; }
+    button { cursor:pointer; }
+    button:focus-visible,input:focus-visible { outline:3px solid #ffe486; outline-offset:3px; }
+    .app-shell { width:100%; min-height:calc(100 * min(var(--vh, 1vh), 1vh)); position:relative; overflow:hidden; }
+    .app-shell::before { content:""; position:fixed; inset:0; pointer-events:none; opacity:.5; background-image:radial-gradient(circle at 15% 20%,#fff 0 1px,transparent 1.5px),radial-gradient(circle at 80% 12%,#fff 0 1px,transparent 1.5px),radial-gradient(circle at 65% 65%,#fff 0 1px,transparent 1.5px); background-size:130px 130px,190px 190px,150px 150px; }
+    .screen { display:none; width:100%; min-height:calc(100 * min(var(--vh, 1vh), 1vh)); padding:clamp(20px,4vw,54px); position:relative; }
+    .screen.active { display:flex; animation:appear .42s ease both; }
+    @keyframes appear { from { opacity:0; transform:translateY(10px) } to { opacity:1; transform:translateY(0) } }
+    .glass { background:var(--panel); border:1px solid rgba(255,255,255,.22); box-shadow:0 22px 55px rgba(7,6,39,.35),inset 0 1px rgba(255,255,255,.12); backdrop-filter:blur(14px); }
+    .magic-btn { border:0; border-radius:999px; padding:.85rem 1.4rem; display:inline-flex; align-items:center; justify-content:center; gap:.55rem; font-weight:800; transition:transform .18s,filter .18s,box-shadow .18s; box-shadow:0 7px 0 rgba(39,19,103,.45); }
+    .magic-btn:hover { transform:translateY(-3px); filter:brightness(1.09); }
+    .magic-btn:active { transform:translateY(3px); box-shadow:0 3px 0 rgba(39,19,103,.45); }
+    .gold-btn { background:linear-gradient(135deg,#ffec9b,#f9b74e); color:#4a266f; }
+    .purple-btn { background:linear-gradient(135deg,#9a63ea,#6334bb); color:white; }
+    .pink-btn { background:linear-gradient(135deg,#ff9fd5,#ed5aa6); color:#52174c; }
+    .soft-btn { background:rgba(255,255,255,.14); color:white; border:1px solid rgba(255,255,255,.28); }
+    .floaty { animation:float 3.6s ease-in-out infinite; }
+    @keyframes float { 50% { transform:translateY(-10px) rotate(2deg); } }
+    .sparkle { position:absolute; color:#fff4a8; animation:twinkle 2.6s ease-in-out infinite; text-shadow:0 0 15px #fff3a8; }
+    @keyframes twinkle { 50% { opacity:.25; transform:scale(.65) rotate(55deg); } }
+    .home-wrap { max-width:1130px; margin:auto; width:100%; display:grid; grid-template-columns:1.05fr .95fr; align-items:center; gap:clamp(24px,5vw,72px); }
+    .hero-art { min-height:430px; border-radius:34px; position:relative; overflow:hidden; border:1px solid rgba(255,233,151,.48); }
+    .hero-art img { width:100%; height:100%; position:absolute; inset:0; object-fit:cover; opacity:.72; }
+    .hero-art::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,transparent 30%,#211568 100%); }
+    .wizard { position:absolute; z-index:2; font-size:clamp(7rem,16vw,12rem); bottom:24px; left:50%; transform:translateX(-50%); filter:drop-shadow(0 16px 10px rgba(0,0,0,.35)); }
+    .lesson-wrap { max-width:1000px; margin:auto; width:100%; }
+    .lesson-card { display:none; min-height:430px; border-radius:30px; padding:clamp(24px,5vw,54px); position:relative; overflow:hidden; }
+    .lesson-card.active { display:grid; grid-template-columns:1fr .85fr; gap:34px; align-items:center; animation:appear .35s ease both; }
+    .formula { background:rgba(255,237,144,.14); border:1px solid rgba(255,226,117,.48); color:#fff1af; border-radius:15px; padding:13px 16px; font-weight:700; }
+    .topic-orb { width:min(250px,55vw); aspect-ratio:1; margin:auto; border-radius:50%; background:radial-gradient(circle at 35% 28%,#fff9d0 0 5%,#fe9ed4 6%,#925cf5 35%,#293184 73%); display:grid; place-items:center; font-size:7rem; box-shadow:0 0 0 18px rgba(255,255,255,.07),0 0 55px #e784ff; }
+    .name-wrap,.instruction-wrap,.final-wrap { max-width:780px; margin:auto; width:100%; align-self:center; text-align:center; border-radius:30px; padding:clamp(28px,6vw,58px); }
+    .name-input { width:100%; border-radius:15px; padding:15px 18px; border:2px solid rgba(255,255,255,.24); background:rgba(255,255,255,.13); color:white; margin:.7rem 0 1.1rem; }
+    .name-input::placeholder { color:#dcd3ff; }
+    .game-screen { padding:18px; flex-direction:column; gap:14px; }
+    .game-top { max-width:1180px; width:100%; margin:auto; display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap; }
+    .stat { display:flex; align-items:center; gap:8px; border-radius:15px; padding:10px 14px; background:rgba(14,13,63,.76); border:1px solid rgba(255,255,255,.2); font-weight:800; }
+    .game-world { width:min(1180px,100%); flex:1; min-height:530px; max-height:680px; margin:auto; position:relative; overflow:hidden; border-radius:28px; border:2px solid rgba(255,226,127,.55); background:#164e4c; box-shadow:0 20px 48px rgba(2,5,39,.48); }
+    .game-world > img { position:absolute; width:100%;height:100%;object-fit:cover;opacity:.78; }
+    .game-world::after { content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(180deg,rgba(15,7,65,.18),rgba(4,47,42,.58)); }
+    .board { position:absolute; z-index:3; width:118px; min-height:89px; padding:9px; border:2px solid #ffe391; border-radius:16px; background:linear-gradient(145deg,#855232,#4a2b20); color:#fff6ce; font-weight:800; font-size:.78rem; box-shadow:0 8px 0 #382018,0 0 18px #ffdc75; transition:transform .2s,filter .2s; }
+    .board:hover { transform:scale(1.06); } .board.done { filter:grayscale(.75); opacity:.62; }
+    .board-1{left:12%;top:20%}.board-2{right:14%;top:19%}.board-3{left:19%;bottom:14%}.board-4{right:18%;bottom:16%}
+    #player { position:absolute; z-index:4; left:48%; top:53%; font-size:3.8rem; transition:left .13s linear,top .13s linear; filter:drop-shadow(0 7px 5px rgba(0,0,0,.45)); }
+    .hint { position:absolute;z-index:3; bottom:15px;left:50%;transform:translateX(-50%);border-radius:99px;padding:8px 14px;background:rgba(11,8,50,.72);font-size:.78rem;white-space:nowrap; }
+    .modal-layer { display:none; position:fixed; z-index:20; inset:0; padding:20px; background:rgba(6,3,32,.7); align-items:center; justify-content:center; }
+    .modal-layer.show { display:flex; }
+    .question-box { width:min(610px,100%); border-radius:27px; padding:28px; position:relative; }
+    .answers { display:grid; gap:10px; margin-top:18px; }
+    .answer { text-align:left; padding:13px 15px; border-radius:13px; border:1px solid rgba(255,255,255,.27); color:white; background:rgba(255,255,255,.11); font-weight:600; }
+    .answer:hover { background:rgba(255,220,108,.3); }
+    .number-row { display:flex; gap:10px; margin-top:18px; }.number-row input{flex:1;margin:0;}
+    .toast { position:fixed; z-index:30; top:20px; left:50%; transform:translate(-50%,-130px); padding:12px 20px; border-radius:99px; color:white; font-weight:800; transition:transform .35s; box-shadow:0 8px 26px rgba(0,0,0,.24); }
+    .toast.show { transform:translate(-50%,0); }.toast.good{background:#209e72}.toast.bad{background:#cf4f78}
+    @media(max-width:720px){.home-wrap,.lesson-card.active{grid-template-columns:1fr}.hero-art{min-height:260px;order:-1}.lesson-card{min-height:unset}.game-world{min-height:500px}.board{transform:scale(.82);}.board:hover{transform:scale(.88)}.board-1{left:3%}.board-2{right:3%}.board-3{left:5%}.board-4{right:5%}.game-top{justify-content:center}}
+  </style>
+  <script src="/_sdk/0e8d3a91e1c6f495.data_sdk.js" type="text/javascript" integrity="sha512-c00oDoGjsMgluCLLEyVl3suwEkgjOGGplVFbsilUoBg4aMKNmsL3mwsc9r0dPn95qiSZyjBousQXgROkAW7p/w=="></script>
+  <script src="/_sdk/04cc6185e046f597.resizing_sdk.js" type="text/javascript" integrity="sha512-CiE/G92aQF0nxneFg1kdOvXih8sQ1Z2a2QI3+r/WvzJwQqH6+IyB3iL07OkJmpm3ABAaf07+FnqWny98f5sR6w=="></script>
+ </head>
+ <body data-template-id="__page-root" style="background: linear-gradient(135deg, rgb(23, 19, 79) 0%, rgb(69, 36, 120) 52%, rgb(13, 90, 85) 100%);">
+  <div class="app-shell"><span class="sparkle" style="top:8%;left:7%;font-size:28px">✦</span><span class="sparkle" style="top:18%;right:8%;font-size:20px;animation-delay:.8s">✧</span><span class="sparkle" style="bottom:10%;left:14%;font-size:24px;animation-delay:1.2s">✦</span>
+   <main>
+    <section id="home" class="screen active">
+     <div class="home-wrap">
+      <div>
+       <p data-template-id="home-kicker" class="canva-text uppercase tracking-[.22em] font-bold text-yellow-200" style="color: rgb(255, 233, 151); font-weight: 700; font-style: normal; font-size: 16px; letter-spacing: 0.12rem;">Grade 7 MEP • Semester 1</p>
+       <h1 data-template-id="home-title" class="canva-text font-bold font-[Fredoka] leading-none mt-3" style="color: rgb(255, 241, 168); font-weight: 700; font-style: normal; font-size: 60px; letter-spacing: 0.02rem;">MAGIC MATH</h1>
+       <p data-template-id="home-subtitle" class="canva-text text-lg leading-relaxed mt-5 max-w-md" style="color: rgb(244, 234, 255); font-weight: 400; font-style: normal; font-size: 19px; line-height: 1.5;">Learn • Play • Think • Win! Explore a magical world of Grade 7 Mathematics.</p>
+       <div class="flex flex-wrap gap-3 mt-8"><button data-template-id="start-button" class="canva-button magic-btn gold-btn" type="button" onclick="goTo('name')" style="background: linear-gradient(135deg, rgb(255, 236, 155), rgb(249, 183, 78)); color: rgb(74, 38, 111); font-weight: 800; font-style: normal; font-size: 16px;">Start Game</button> <button data-template-id="learn-button" class="canva-button magic-btn purple-btn" type="button" onclick="showLesson(0);goTo('learn')" style="background: linear-gradient(135deg, rgb(154, 99, 234), rgb(99, 52, 187)); color: rgb(255, 255, 255); font-weight: 800; font-style: normal; font-size: 16px;">Learn</button> <button data-template-id="how-button" class="canva-button magic-btn soft-btn" type="button" onclick="goTo('instructions')" style="background: rgba(255, 255, 255, 0.14); color: rgb(255, 255, 255); font-weight: 800; font-style: normal; font-size: 16px;">How to Play</button>
+       </div>
+      </div>
+      <div data-template-id="hero-panel" class="canva-panel hero-art glass" style="background: rgba(20, 18, 67, 0.78);"><img data-template-id="hero-image" class="canva-image" loading="lazy" src="https://images.pexels.com/photos/2575758/pexels-photo-2575758.jpeg" alt="A surreal forest scene with vivid purple leaves and a low angle view creating a dreamlike atmosphere.">
+       <div class="wizard floaty" aria-hidden="true">
+        🧙‍♀️
+       </div>
+       <div class="absolute z-[3] top-7 left-7 text-4xl">
+        ✨ 🧚 🦄
+       </div>
+      </div>
+     </div>
+    </section>
+    <section id="learn" class="screen">
+     <div class="lesson-wrap">
+      <div class="flex justify-between gap-3 items-center mb-5"><button data-template-id="lesson-home-button" class="canva-button magic-btn soft-btn" type="button" onclick="goTo('home')" style="background: rgba(255, 255, 255, 0.14); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Home</button>
+       <p data-template-id="lesson-label" class="canva-text font-bold text-yellow-200" style="color: rgb(255, 233, 151); font-weight: 700; font-style: normal; font-size: 16px;">Spell Book Lessons</p><span id="lesson-count" class="text-sm font-bold">1 / 8</span>
+      </div>
+      <article class="lesson-card active glass" data-lesson="0">
+       <div>
+        <p data-template-id="lesson-1-tag" class="canva-tag text-pink-200 font-bold" style="color: rgb(255, 181, 222); font-weight: 700; font-style: normal; font-size: 16px;">NUMBER MAGIC</p>
+        <h2 data-template-id="lesson-1-title" class="canva-text font-[Fredoka] font-bold mt-2" style="color: rgb(255, 241, 168); font-weight: 700; font-style: normal; font-size: 24px;">Integers</h2>
+        <p data-template-id="lesson-1-text" class="canva-text mt-4 leading-relaxed" style="color: rgb(255, 255, 255); font-weight: 400; font-style: normal; font-size: 16px; line-height: 1.5;">Integers are whole numbers. They can be positive, negative, or zero. Think of a number line: numbers move right to become greater and left to become smaller.</p>
+        <div data-template-id="lesson-1-formula" class="canva-banner formula mt-4" style="background: rgba(255, 237, 144, 0.14); color: rgb(255, 241, 175); font-weight: 700; font-style: normal; font-size: 16px;">Example: −3 &lt; 0 &lt; 5</div>
+        <p data-template-id="lesson-1-vocab" class="canva-text text-sm mt-4 text-violet-100" style="color: rgb(230, 223, 255); font-weight: 400; font-style: normal; font-size: 16px;">Key words: positive • negative • zero • number line</p>
+       </div>
+       <div class="topic-orb">
+        ➖
+       </div>
+      </article>
+      <article class="lesson-card glass" data-lesson="1">
+       <div>
+        <p data-template-id="lesson-2-tag" class="canva-tag text-pink-200 font-bold" style="color: rgb(255, 181, 222); font-weight: 700; font-style: normal; font-size: 16px;">NUMBER MAGIC</p>
+        <h2 data-template-id="lesson-2-title" class="canva-text font-[Fredoka] font-bold mt-2" style="color: rgb(255, 241, 168); font-weight: 700; font-style: normal; font-size: 24px;">Adding &amp; Subtracting Integers</h2>
+        <p data-template-id="lesson-2-text" class="canva-text mt-4 leading-relaxed" style="color: rgb(255, 255, 255); font-weight: 400; font-style: normal; font-size: 16px; line-height: 1.5;">For the same signs, add the numbers and keep the sign. For different signs, subtract and keep the sign of the number with the larger value.</p>
+        <div data-template-id="lesson-2-formula" class="canva-banner formula mt-4" style="background: rgba(255, 237, 144, 0.14); color: rgb(255, 241, 175); font-weight: 700; font-style: normal; font-size: 16px;">Example: −7 + 12 = 5</div>
+        <p data-template-id="lesson-2-vocab" class="canva-text text-sm mt-4 text-violet-100" style="color: rgb(230, 223, 255); font-weight: 400; font-style: normal; font-size: 16px;">Key words: sum • difference • opposite • value</p>
+       </div>
+       <div class="topic-orb">
+        ➕
+       </div>
+      </article>
+      <article class="lesson-card glass" data-lesson="2">
+       <div>
+        <p data-template-id="lesson-3-tag" class="canva-tag text-pink-200 font-bold" style="color: rgb(255, 181, 222); font-weight: 700; font-style: normal; font-size: 16px;">NUMBER MAGIC</p>
+        <h2 data-template-id="lesson-3-title" class="canva-text font-[Fredoka] font-bold mt-2" style="color: rgb(255, 241, 168); font-weight: 700; font-style: normal; font-size: 24px;">Multiplying &amp; Dividing Integers</h2>
+        <p data-template-id="lesson-3-text" class="canva-text mt-4 leading-relaxed" style="color: rgb(255, 255, 255); font-weight: 400; font-style: normal; font-size: 16px; line-height: 1.5;">Same signs make a positive answer. Different signs make a negative answer. This rule works for multiplication and division.</p>
+        <div data-template-id="lesson-3-formula" class="canva-banner formula mt-4" style="background: rgba(255, 237, 144, 0.14); color: rgb(255, 241, 175); font-weight: 700; font-style: normal; font-size: 16px;">Example: (−4) × (−3) = 12</div>
+        <p data-template-id="lesson-3-vocab" class="canva-text text-sm mt-4 text-violet-100" style="color: rgb(230, 223, 255); font-weight: 400; font-style: normal; font-size: 16px;">Key words: product • quotient • positive • negative</p>
+       </div>
+       <div class="topic-orb">
+        ✖️
+       </div>
+      </article>
+      <article class="lesson-card glass" data-lesson="3">
+       <div>
+        <p data-template-id="lesson-4-tag" class="canva-tag text-pink-200 font-bold" style="color: rgb(255, 181, 222); font-weight: 700; font-style: normal; font-size: 16px;">PARTS OF A WHOLE</p>
+        <h2 data-template-id="lesson-4-title" class="canva-text font-[Fredoka] font-bold mt-2" style="color: rgb(255, 241, 168); font-weight: 700; font-style: normal; font-size: 24px;">Fractions</h2>
+        <p data-template-id="lesson-4-text" class="canva-text mt-4 leading-relaxed" style="color: rgb(255, 255, 255); font-weight: 400; font-style: normal; font-size: 16px; line-height: 1.5;">A fraction shows part of a whole. The top number is the numerator. The bottom number is the denominator.</p>
+        <div data-template-id="lesson-4-formula" class="canva-banner formula mt-4" style="background: rgba(255, 237, 144, 0.14); color: rgb(255, 241, 175); font-weight: 700; font-style: normal; font-size: 16px;">Example: 3/4 means 3 parts out of 4 equal parts.</div>
+        <p data-template-id="lesson-4-vocab" class="canva-text text-sm mt-4 text-violet-100" style="color: rgb(230, 223, 255); font-weight: 400; font-style: normal; font-size: 16px;">Key words: numerator • denominator • equivalent • simplify</p>
+       </div>
+       <div class="topic-orb">
+        🍰
+       </div>
+      </article>
+      <article class="lesson-card glass" data-lesson="4">
+       <div>
+        <p data-template-id="lesson-5-tag" class="canva-tag text-pink-200 font-bold" style="color: rgb(255, 181, 222); font-weight: 700; font-style: normal; font-size: 16px;">PLACE VALUE MAGIC</p>
+        <h2 data-template-id="lesson-5-title" class="canva-text font-[Fredoka] font-bold mt-2" style="color: rgb(255, 241, 168); font-weight: 700; font-style: normal; font-size: 24px;">Decimals</h2>
+        <p data-template-id="lesson-5-text" class="canva-text mt-4 leading-relaxed" style="color: rgb(255, 255, 255); font-weight: 400; font-style: normal; font-size: 16px; line-height: 1.5;">Decimals show parts of one whole using place value. Digits after the decimal point show tenths, hundredths, and thousandths.</p>
+        <div data-template-id="lesson-5-formula" class="canva-banner formula mt-4" style="background: rgba(255, 237, 144, 0.14); color: rgb(255, 241, 175); font-weight: 700; font-style: normal; font-size: 16px;">Example: 0.75 = 75 hundredths = 3/4</div>
+        <p data-template-id="lesson-5-vocab" class="canva-text text-sm mt-4 text-violet-100" style="color: rgb(230, 223, 255); font-weight: 400; font-style: normal; font-size: 16px;">Key words: decimal point • tenths • hundredths • place value</p>
+       </div>
+       <div class="topic-orb">
+        🔢
+       </div>
+      </article>
+      <article class="lesson-card glass" data-lesson="5">
+       <div>
+        <p data-template-id="lesson-6-tag" class="canva-tag text-pink-200 font-bold" style="color: rgb(255, 181, 222); font-weight: 700; font-style: normal; font-size: 16px;">ALGEBRA SPELLS</p>
+        <h2 data-template-id="lesson-6-title" class="canva-text font-[Fredoka] font-bold mt-2" style="color: rgb(255, 241, 168); font-weight: 700; font-style: normal; font-size: 24px;">Basic Algebra</h2>
+        <p data-template-id="lesson-6-text" class="canva-text mt-4 leading-relaxed" style="color: rgb(255, 255, 255); font-weight: 400; font-style: normal; font-size: 16px; line-height: 1.5;">Algebra uses letters to represent unknown numbers. A letter such as x is called a variable.</p>
+        <div data-template-id="lesson-6-formula" class="canva-banner formula mt-4" style="background: rgba(255, 237, 144, 0.14); color: rgb(255, 241, 175); font-weight: 700; font-style: normal; font-size: 16px;">Example: 3x means 3 × x</div>
+        <p data-template-id="lesson-6-vocab" class="canva-text text-sm mt-4 text-violet-100" style="color: rgb(230, 223, 255); font-weight: 400; font-style: normal; font-size: 16px;">Key words: variable • expression • coefficient • term</p>
+       </div>
+       <div class="topic-orb">
+        🔮
+       </div>
+      </article>
+      <article class="lesson-card glass" data-lesson="6">
+       <div>
+        <p data-template-id="lesson-7-tag" class="canva-tag text-pink-200 font-bold" style="color: rgb(255, 181, 222); font-weight: 700; font-style: normal; font-size: 16px;">ALGEBRA SPELLS</p>
+        <h2 data-template-id="lesson-7-title" class="canva-text font-[Fredoka] font-bold mt-2" style="color: rgb(255, 241, 168); font-weight: 700; font-style: normal; font-size: 24px;">Simple Equations</h2>
+        <p data-template-id="lesson-7-text" class="canva-text mt-4 leading-relaxed" style="color: rgb(255, 255, 255); font-weight: 400; font-style: normal; font-size: 16px; line-height: 1.5;">An equation says two expressions are equal. Use the opposite operation to keep both sides balanced and find the unknown.</p>
+        <div data-template-id="lesson-7-formula" class="canva-banner formula mt-4" style="background: rgba(255, 237, 144, 0.14); color: rgb(255, 241, 175); font-weight: 700; font-style: normal; font-size: 16px;">Example: x + 8 = 15, so x = 7</div>
+        <p data-template-id="lesson-7-vocab" class="canva-text text-sm mt-4 text-violet-100" style="color: rgb(230, 223, 255); font-weight: 400; font-style: normal; font-size: 16px;">Key words: equation • solve • equal • inverse operation</p>
+       </div>
+       <div class="topic-orb">
+        ⚖️
+       </div>
+      </article>
+      <article class="lesson-card glass" data-lesson="7">
+       <div>
+        <p data-template-id="lesson-8-tag" class="canva-tag text-pink-200 font-bold" style="color: rgb(255, 181, 222); font-weight: 700; font-style: normal; font-size: 16px;">SHAPE MAGIC</p>
+        <h2 data-template-id="lesson-8-title" class="canva-text font-[Fredoka] font-bold mt-2" style="color: rgb(255, 241, 168); font-weight: 700; font-style: normal; font-size: 24px;">Geometry Basics</h2>
+        <p data-template-id="lesson-8-text" class="canva-text mt-4 leading-relaxed" style="color: rgb(255, 255, 255); font-weight: 400; font-style: normal; font-size: 16px; line-height: 1.5;">Geometry studies shapes, lines, angles, and space. The perimeter is the distance all around a shape.</p>
+        <div data-template-id="lesson-8-formula" class="canva-banner formula mt-4" style="background: rgba(255, 237, 144, 0.14); color: rgb(255, 241, 175); font-weight: 700; font-style: normal; font-size: 16px;">Example: Triangle perimeter = side 1 + side 2 + side 3</div>
+        <p data-template-id="lesson-8-vocab" class="canva-text text-sm mt-4 text-violet-100" style="color: rgb(230, 223, 255); font-weight: 400; font-style: normal; font-size: 16px;">Key words: angle • side • vertex • perimeter</p>
+       </div>
+       <div class="topic-orb">
+        📐
+       </div>
+      </article>
+      <nav class="flex justify-between mt-5 gap-3" aria-label="Lesson navigation"><button data-template-id="previous-lesson-button" class="canva-button magic-btn soft-btn" type="button" onclick="showLesson(currentLesson-1)" style="background: rgba(255, 255, 255, 0.14); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Previous</button> <button data-template-id="next-lesson-button" class="canva-button magic-btn gold-btn" type="button" onclick="showLesson(currentLesson+1)" style="background: linear-gradient(135deg, rgb(255, 236, 155), rgb(249, 183, 78)); color: rgb(74, 38, 111); font-weight: 800; font-style: normal; font-size: 16px;">Next Lesson</button>
+      </nav>
+     </div>
+    </section>
+    <section id="name" class="screen">
+     <div class="name-wrap glass">
+      <div class="text-6xl mb-4">
+       🪄
+      </div>
+      <h2 data-template-id="name-title" class="canva-text font-[Fredoka] font-bold" style="color: rgb(255, 241, 168); font-weight: 700; font-style: normal; font-size: 24px;">Choose Your Wizard Name</h2>
+      <form id="name-form" class="max-w-md mx-auto mt-5"><label data-template-id="name-label" class="canva-text block text-left font-bold" for="player-name" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Enter Your Name</label> <input id="player-name" class="canva-input name-input" type="text" maxlength="24" autocomplete="name">
+       <p id="name-error" class="hidden text-pink-200 text-sm mb-3" aria-live="polite">Please enter your name to continue.</p><button data-template-id="continue-button" class="canva-button magic-btn gold-btn w-full" type="submit" style="background: linear-gradient(135deg, rgb(255, 236, 155), rgb(249, 183, 78)); color: rgb(74, 38, 111); font-weight: 800; font-style: normal; font-size: 16px;">Continue to the Forest</button>
+      </form>
+      <p data-template-id="name-home-link" class="canva-text mt-5 underline cursor-pointer" tabindex="0" role="button" onclick="goTo('home')" onkeydown="if(event.key==='Enter')goTo('home')" style="color: rgb(232, 221, 255); font-weight: 600; font-style: normal; font-size: 16px;">← Back to Home</p>
+     </div>
+    </section>
+    <section id="instructions" class="screen">
+     <div class="instruction-wrap glass">
+      <div class="text-6xl mb-4">
+       📜
+      </div>
+      <h2 data-template-id="instruction-title" class="canva-text font-[Fredoka] font-bold" style="color: rgb(255, 241, 168); font-weight: 700; font-style: normal; font-size: 24px;">How to Play</h2>
+      <ol class="text-left max-w-lg mx-auto mt-6 space-y-3 leading-relaxed list-decimal list-inside">
+       <li data-template-id="instruction-1" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 400; font-style: normal; font-size: 16px;">Use the arrow keys to move your character.</li>
+       <li data-template-id="instruction-2" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 400; font-style: normal; font-size: 16px;">Walk to a question board, or click a board.</li>
+       <li data-template-id="instruction-3" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 400; font-style: normal; font-size: 16px;">Read the mathematics question carefully.</li>
+       <li data-template-id="instruction-4" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 400; font-style: normal; font-size: 16px;">Choose or type the correct answer.</li>
+       <li data-template-id="instruction-5" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 400; font-style: normal; font-size: 16px;">Earn 10 points and one star for every correct answer.</li>
+       <li data-template-id="instruction-6" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 400; font-style: normal; font-size: 16px;">Try to get the highest score. Wrong answers give 0 points.</li>
+      </ol>
+      <div class="flex flex-wrap justify-center gap-3 mt-8">
+       <button data-template-id="instruction-home-button" class="canva-button magic-btn soft-btn" type="button" onclick="goTo('home')" style="background: rgba(255, 255, 255, 0.14); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Back to Home</button><button data-template-id="instruction-start-button" class="canva-button magic-btn gold-btn" type="button" onclick="goTo('name')" style="background: linear-gradient(135deg, rgb(255, 236, 155), rgb(249, 183, 78)); color: rgb(74, 38, 111); font-weight: 800; font-style: normal; font-size: 16px;">Start Game</button>
+      </div>
+     </div>
+    </section>
+    <section id="game" class="screen game-screen">
+     <header class="game-top"><button data-template-id="game-home-button" class="canva-button magic-btn soft-btn py-2 px-3" type="button" onclick="goTo('home')" style="background: rgba(255, 255, 255, 0.14); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Home</button>
+      <div class="flex gap-2 flex-wrap justify-center">
+       <div class="stat">
+        <span>🏆</span><span data-template-id="score-label" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Current Score:</span><span id="score" aria-live="polite">0</span>
+       </div>
+       <div class="stat">
+        <span>🗺️</span><span data-template-id="question-label" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Question:</span><span id="question-number">0 / 4</span>
+       </div>
+       <div class="stat">
+        ⭐ <span id="stars">0</span>
+       </div>
+      </div>
+     </header>
+     <div class="game-world"><img data-template-id="game-image" class="canva-image" loading="lazy" src="https://images.pexels.com/photos/326055/pexels-photo-326055.jpeg" alt="Magical scene of blue butterflies fluttering amidst glowing mushrooms in a dark forest."> <button class="board board-1" id="board-1" type="button" onclick="openQuestion(1)">✦ Crystal Board</button> <button class="board board-2" id="board-2" type="button" onclick="openQuestion(2)">✦ Moon Board</button> <button class="board board-3" id="board-3" type="button" onclick="openQuestion(3)">✦ Portal Board</button> <button class="board board-4" id="board-4" type="button" onclick="openQuestion(4)">✦ Castle Board</button>
+      <div id="player" aria-label="Wizard player character">
+       🧙
+      </div>
+      <p data-template-id="game-hint" class="canva-text hint" style="color: rgb(255, 255, 255); font-weight: 600; font-style: normal; font-size: 16px;">Use arrow keys to explore • Click a glowing question board</p>
+     </div>
+    </section>
+    <section id="final" class="screen">
+     <div class="final-wrap glass">
+      <div class="text-6xl mb-3">
+       🎉
+      </div>
+      <h2 data-template-id="final-title" class="canva-text font-[Fredoka] font-bold" style="color: rgb(255, 241, 168); font-weight: 700; font-style: normal; font-size: 24px;">Congratulations!</h2>
+      <p id="final-greeting" class="text-xl mt-3 font-bold" aria-live="polite"></p>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-7 text-left">
+       <div class="stat flex-col items-start">
+        <span data-template-id="final-score-label" class="canva-text text-sm" style="color: rgb(232, 221, 255); font-weight: 600; font-style: normal; font-size: 16px;">Total Score</span><strong id="final-score">0</strong>
+       </div>
+       <div class="stat flex-col items-start">
+        <span data-template-id="final-correct-label" class="canva-text text-sm" style="color: rgb(232, 221, 255); font-weight: 600; font-style: normal; font-size: 16px;">Correct Answers</span><strong id="final-correct">0</strong>
+       </div>
+       <div class="stat flex-col items-start">
+        <span data-template-id="final-wrong-label" class="canva-text text-sm" style="color: rgb(232, 221, 255); font-weight: 600; font-style: normal; font-size: 16px;">Wrong Answers</span><strong id="final-wrong">0</strong>
+       </div>
+       <div class="stat flex-col items-start">
+        <span data-template-id="final-percent-label" class="canva-text text-sm" style="color: rgb(232, 221, 255); font-weight: 600; font-style: normal; font-size: 16px;">Percentage</span><strong id="final-percent">0%</strong>
+       </div>
+      </div>
+      <div id="performance" class="mt-7 text-2xl font-[Fredoka] font-bold text-yellow-200" aria-live="polite"></div>
+      <div class="flex flex-wrap justify-center gap-3 mt-8">
+       <button data-template-id="play-again-button" class="canva-button magic-btn gold-btn" type="button" onclick="startGame()" style="background: linear-gradient(135deg, rgb(255, 236, 155), rgb(249, 183, 78)); color: rgb(74, 38, 111); font-weight: 800; font-style: normal; font-size: 16px;">Play Again</button><button data-template-id="final-home-button" class="canva-button magic-btn soft-btn" type="button" onclick="goTo('home')" style="background: rgba(255, 255, 255, 0.14); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Back to Home</button>
+      </div>
+     </div>
+    </section>
+   </main>
+   <div id="question-modal" class="modal-layer" role="dialog" aria-modal="true" aria-labelledby="question-title">
+    <div class="question-box glass">
+     <p id="question-type" class="text-pink-200 font-bold text-sm"></p>
+     <h2 id="question-title" class="font-[Fredoka] font-bold mt-2"></h2>
+     <div id="answer-options" class="answers"></div>
+     <form id="number-form" class="number-row hidden">
+      <label class="sr-only" for="number-answer">Your answer</label><input id="number-answer" class="name-input" type="number"><button data-template-id="answer-submit-button" class="canva-button magic-btn gold-btn" type="submit" style="background: linear-gradient(135deg, rgb(255, 236, 155), rgb(249, 183, 78)); color: rgb(74, 38, 111); font-weight: 800; font-style: normal; font-size: 16px;">Cast Answer</button>
+     </form>
     </div>
-
-    <!-- 2. OVERWORLD MAP SCREEN -->
-    <div id="map-screen" class="screen">
-        <div class="header-bar">
-            <div class="player-info-pill">
-                <span id="map-player-rank" style="color: var(--primary-gold); font-weight: bold;">Novice Counter</span>
-                <div class="stat-badge">⭐ <span id="map-total-stars">0</span>/15</div>
-            </div>
-            <div class="player-info-pill">
-                <div class="stat-badge">💧 <span id="map-gold">50</span> Mana Stones</div>
-                <button class="btn" id="map-to-title" style="padding: 4px 10px; font-size: 0.8rem;">Menu</button>
-            </div>
-        </div>
-
-        <div class="map-nodes-container" id="nodes-list">
-            <!-- Dynamic map nodes inserted via JS -->
-        </div>
-    </div>
-
-    <!-- 3. SANCTUARY & GEAR SCREEN -->
-    <div id="sanctuary-screen" class="screen">
-        <div class="header-bar">
-            <h2>The Codex Sanctuary</h2>
-            <button class="btn" id="sanctuary-to-title" style="padding: 4px 10px; font-size: 0.8rem;">Back</button>
-        </div>
-
-        <div class="sanctuary-grid">
-            <div class="panel-card">
-                <h2>Mathemancer Stats</h2>
-                <div class="item-row"><span>Rank Title:</span> <strong id="sanc-rank" style="color:var(--primary-gold)">Novice Counter</strong></div>
-                <div class="item-row"><span>Total Lifetime EXP:</span> <strong id="sanc-exp">0 EXP</strong></div>
-                <div class="item-row"><span>Highest Battle Score:</span> <strong id="sanc-highscore">0</strong></div>
-                <div class="item-row"><span>Skill Points (SP):</span> <strong id="sanc-sp" style="color:var(--accent-blue)">0 SP</strong></div>
-            </div>
-
-            <div class="panel-card">
-                <h2>Equipment Vault</h2>
-                <div class="item-row">
-                    <div><strong>Abacus Staff</strong><br><small>Base Magic Power (+5 ATK)</small></div>
-                    <button class="btn btn-gold" style="padding:4px 8px; font-size:0.75rem;">Equipped</button>
-                </div>
-                <div class="item-row">
-                    <div><strong>Apprentice Robe</strong><br><small>Basic Shielding (+20 HP)</small></div>
-                    <button class="btn btn-gold" style="padding:4px 8px; font-size:0.75rem;">Equipped</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 4. COMBAT BATTLE SCREEN -->
-    <div id="battle-screen" class="screen">
-        <div class="header-bar" style="padding: 6px 12px;">
-            <span id="battle-stage-title" style="font-weight: bold; color: var(--primary-gold);">Ch 1: Baron Void</span>
-            <div class="stat-badge">Score: <span id="battle-score">0</span></div>
-        </div>
-
-        <div class="battle-arena">
-            <canvas id="battle-canvas"></canvas>
-            
-            <!-- Player Sprite & Vitals -->
-            <div class="combatant">
-                <div class="vitals-box">
-                    <div class="vitals-name">Apprentice</div>
-                    <div class="bar-container"><div id="player-hp-bar" class="bar-fill hp-fill"></div></div>
-                    <div class="bar-container"><div id="player-mp-bar" class="bar-fill mp-fill"></div></div>
-                </div>
-                <div class="sprite player-sprite" id="player-sprite-el"></div>
-            </div>
-
-            <!-- Boss Sprite & Vitals -->
-            <div class="combatant">
-                <div class="vitals-box">
-                    <div class="vitals-name" id="boss-name-el">Baron Void</div>
-                    <div class="bar-container"><div id="boss-hp-bar" class="bar-fill hp-fill"></div></div>
-                </div>
-                <div class="sprite boss-sprite" id="boss-sprite-el"></div>
-            </div>
-        </div>
-
-        <!-- Problem Panel -->
-        <div class="action-panel">
-            <div class="problem-card">
-                <div class="problem-text" id="problem-text-el">Loading magical equation...</div>
-            </div>
-
-            <div class="options-grid" id="options-container">
-                <!-- 4 choice buttons injected here -->
-            </div>
-
-            <div class="battle-controls-row">
-                <button class="btn" id="btn-use-hint" style="font-size: 0.85rem; padding: 6px 12px;">💡 Euclid Hint (-10 MP)</button>
-                <button class="btn" id="btn-open-scratch" style="font-size: 0.85rem; padding: 6px 12px;">✏️ Scratchpad</button>
-                <span style="font-size: 0.85rem; color: var(--text-dim);" id="question-tracker">Q: 1/10</span>
-            </div>
-        </div>
-    </div>
-
-</div>
-
-<!-- OVERLAY SCRATCHPAD -->
-<div id="scratchpad-overlay">
-    <div class="scratchpad-header">
-        <h3 style="color: var(--primary-gold);">Magical Scratchpad Canvas</h3>
-        <div style="display: flex; gap: 8px;">
-            <button class="btn btn-red" id="btn-clear-scratch" style="padding: 4px 10px; font-size: 0.8rem;">Clear</button>
-            <button class="btn" id="btn-close-scratch" style="padding: 4px 10px; font-size: 0.8rem;">Close</button>
-        </div>
-    </div>
-    <canvas id="scratch-canvas"></canvas>
-</div>
-
-<!-- MODAL DIALOG (Explanations & Stage Results) -->
-<div class="modal-overlay" id="game-modal">
-    <div class="modal-box">
-        <div class="modal-title" id="modal-title">Spell Miscast!</div>
-        <div id="modal-body" style="font-size: 0.95rem; line-height: 1.4;">
-            <!-- Dynamic modal content -->
-        </div>
-        <button class="btn btn-gold" id="modal-primary-btn">Continue</button>
-    </div>
-</div>
-
-<script>
-/**
- * MAGIC MATH - Core Game Engine
- * Comprehensive Grade 7 Educational RPG Implementation
- */
-
-// --- 1. SOUND SYNTHESIZER (Web Audio API) ---
-class SoundEngine {
-    constructor() {
-        this.ctx = null;
-    }
-
-    init() {
-        if (!this.ctx) {
-            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-    }
-
-    playChime() { // Correct Answer / Positive
-        if (!this.ctx) return;
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(523.25, now); // C5
-        osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.1); // E5
-        osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.2); // G5
-        gain.gain.setValueAtTime(0.3, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.4);
-    }
-
-    playThud() { // Incorrect Answer / Hit Taken
-        if (!this.ctx) return;
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(130, now);
-        osc.frequency.exponentialRampToValueAtTime(40, now + 0.3);
-        gain.gain.setValueAtTime(0.4, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.3);
-    }
-
-    playSpell() { // Magic Cast
-        if (!this.ctx) return;
-        const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(300, now);
-        osc.frequency.linearRampToValueAtTime(800, now + 0.2);
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.25);
-    }
-}
-
-const audio = new SoundEngine();
-
-// --- 2. GRADE 7 MATHEMATICS QUESTION DATABASE ---
-const QUESTION_BANK = [
-    // Chapter 1: Integers & Absolute Value
-    { ch: 1, q: "Evaluate: (-12) + 7", options: ["-5", "5", "-19", "19"], answer: 0, exp: "When adding a positive to a negative, subtract the absolute values: 12 - 7 = 5. Since -12 has greater magnitude, answer is -5." },
-    { ch: 1, q: "Evaluate: (-8) × (-6)", options: ["48", "-48", "14", "-14"], answer: 0, exp: "Multiplying two negative numbers always yields a positive result: 8 × 6 = 48." },
-    { ch: 1, q: "Calculate: |-15| - |7|", options: ["8", "-8", "22", "-22"], answer: 0, exp: "Absolute value turns negative numbers positive: |-15| = 15, |7| = 7. Thus 15 - 7 = 8." },
-    { ch: 1, q: "Evaluate: (-20) ÷ 4 - (-3)", options: ["-2", "-8", "2", "-5"], answer: 0, exp: "(-20) ÷ 4 = -5. Subtracting -3 is equivalent to adding 3: -5 + 3 = -2." },
-
-    // Chapter 2: Prime Factors, HCF & LCM
-    { ch: 2, q: "What is the Prime Factorization of 60?", options: ["2² × 3 × 5", "2 × 30", "2³ × 5", "4 × 15"], answer: 0, exp: "Decomposing 60 down to primes: 60 = 2 × 30 = 2 × 2 × 15 = 2² × 3 × 5." },
-    { ch: 2, q: "Find the Highest Common Factor (HCF) of 24 and 36.", options: ["12", "6", "72", "4"], answer: 0, exp: "Factors of 24: {1,2,3,4,6,8,12,24}. Factors of 36: {1,2,3,4,6,9,12,18,36}. Greatest shared factor = 12." },
-    { ch: 2, q: "Find the Lowest Common Multiple (LCM) of 8 and 12.", options: ["24", "48", "4", "96"], answer: 0, exp: "Multiples of 8: 8, 16, 24, 32... Multiples of 12: 12, 24, 36... Smallest shared multiple = 24." },
-    { ch: 2, q: "Which of the following is a Prime Number?", options: ["37", "39", "45", "51"], answer: 0, exp: "37 has no divisors other than 1 and itself. (39=3x13, 45=5x9, 51=3x17)." },
-
-    // Chapter 3: Rational Numbers (Fractions/Decimals/Percents)
-    { ch: 3, q: "Convert 3/5 into a percentage.", options: ["60%", "35%", "50%", "75%"], answer: 0, exp: "3 ÷ 5 = 0.60. Multiplying 0.60 by 100 gives 60%." },
-    { ch: 3, q: "Evaluate: 1/4 + 2/3", options: ["11/12", "3/7", "3/12", "5/7"], answer: 0, exp: "Find common denominator (12): 3/12 + 8/12 = 11/12." },
-    { ch: 3, q: "Convert 0.75 into a simplified fraction.", options: ["3/4", "7/5", "75/10", "4/5"], answer: 0, exp: "0.75 = 75/100. Dividing numerator and denominator by 25 yields 3/4." },
-    { ch: 3, q: "Calculate 20% of 150.", options: ["30", "20", "25", "15"], answer: 0, exp: "20% = 0.20. 0.20 × 150 = 30." },
-
-    // Chapter 4: Linear Equations
-    { ch: 4, q: "Solve for x: x + 9 = -4", options: ["x = -13", "x = 5", "x = -5", "x = 13"], answer: 0, exp: "Subtract 9 from both sides: x = -4 - 9 = -13." },
-    { ch: 4, q: "Solve for x: 3x - 5 = 16", options: ["x = 7", "x = 3.6", "x = 21", "x = 9"], answer: 0, exp: "Add 5 to both sides: 3x = 21. Divide by 3: x = 7." },
-    { ch: 4, q: "Simplify: 4x + 7 - 2x + 3", options: ["2x + 10", "6x + 10", "2x + 4", "12x"], answer: 0, exp: "Combine like terms: (4x - 2x) + (7 + 3) = 2x + 10." },
-    { ch: 4, q: "Solve for x: 2(x + 4) = 18", options: ["x = 5", "x = 7", "x = 9", "x = 13"], answer: 0, exp: "Expand bracket: 2x + 8 = 18. Subtract 8: 2x = 10. Divide by 2: x = 5." },
-
-    // Chapter 5: Grand Review
-    { ch: 5, q: "Evaluate: (-3)² + |-10| ÷ 2", options: ["14", "11", "-4", "8"], answer: 0, exp: "(-3)² = 9. |-10| = 10. 10 ÷ 2 = 5. 9 + 5 = 14." },
-    { ch: 5, q: "A robe costs 200 Gold. You get a 15% discount. What is the final price?", options: ["170 Gold", "185 Gold", "30 Gold", "150 Gold"], answer: 0, exp: "15% of 200 = 30 Gold discount. Final price = 200 - 30 = 170 Gold." }
-];
-
-// --- 3. GAME STATE MANAGEMENT ---
-const CHAPTERS = [
-    { id: 1, name: "The Frigid Abyss", boss: "Baron Void", topic: "Integers & Absolute Value" },
-    { id: 2, name: "The Crystal Crags", boss: "Prime Behemoth", topic: "Factors, LCM & Primes" },
-    { id: 3, name: "The Prism Ponds", boss: "Decima Shapeshifter", topic: "Rational Numbers & Percents" },
-    { id: 4, name: "The Shifting Ruins", boss: "Lord Variable", topic: "Linear Equations" },
-    { id: 5, name: "The Chaos Citadel", boss: "The Chaos Vector", topic: "Comprehensive Realm Core" }
-];
-
-let gameState = {
-    exp: 0,
-    gold: 50,
-    stars: [0, 0, 0, 0, 0],
-    highScore: 0,
-    sp: 0
-};
-
-function loadSavedData() {
-    const data = localStorage.getItem("magic_math_save_v1");
-    if (data) {
-        try {
-            gameState = Object.assign(gameState, JSON.parse(data));
-        } catch(e) {}
-    }
-}
-
-function saveData() {
-    localStorage.setItem("magic_math_save_v1", JSON.stringify(gameState));
-}
-
-function getRankTitle(exp) {
-    if (exp < 500) return "Novice Counter";
-    if (exp < 2000) return "Equation Apprentice";
-    if (exp < 5000) return "Factor Finder";
-    if (exp < 10000) return "Algebra Knight";
-    if (exp < 20000) return "Matrix Master";
-    return "Arch-Mathemancer";
-}
-
-// --- 4. SCREEN NAVIGATION ---
-function showScreen(screenId) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(screenId).classList.add('active');
-    updateUI();
-}
-
-function updateUI() {
-    const rank = getRankTitle(gameState.exp);
-    document.getElementById('title-rank-display').textContent = `Rank: ${rank}`;
-    document.getElementById('map-player-rank').textContent = rank;
-    document.getElementById('map-gold').textContent = gameState.gold;
-    
-    const totalStars = gameState.stars.reduce((a,b) => a+b, 0);
-    document.getElementById('map-total-stars').textContent = totalStars;
-
-    // Sanctuary updates
-    document.getElementById('sanc-rank').textContent = rank;
-    document.getElementById('sanc-exp').textContent = `${gameState.exp} EXP`;
-    document.getElementById('sanc-highscore').textContent = gameState.highScore;
-    document.getElementById('sanc-sp').textContent = `${gameState.sp} SP`;
-
-    renderMapNodes();
-}
-
-function renderMapNodes() {
-    const container = document.getElementById('nodes-list');
-    container.innerHTML = '';
-
-    CHAPTERS.forEach((ch, idx) => {
-        const isLocked = idx > 0 && gameState.stars[idx - 1] === 0;
-        const node = document.createElement('div');
-        node.className = `chapter-node ${isLocked ? 'locked' : ''}`;
-        
-        let starStr = '⭐'.repeat(gameState.stars[idx]) + '☆'.repeat(3 - gameState.stars[idx]);
-        
-        node.innerHTML = `
-            <div class="node-info">
-                <h3>Ch ${ch.id}: ${ch.name}</h3>
-                <p>Boss: ${ch.boss} | ${ch.topic}</p>
-            </div>
-            <div class="stars-container">${isLocked ? '🔒' : starStr}</div>
-        `;
-
-        if (!isLocked) {
-            node.addEventListener('click', () => startBattle(ch.id));
-        }
-        container.appendChild(node);
-    });
-}
-
-// --- 5. COMBAT & QUESTION ENGINE ---
-let currentBattle = null;
-
-function startBattle(chapterId) {
-    audio.init();
-    const chData = CHAPTERS.find(c => c.id === chapterId);
-    
-    // Filter & randomize questions
-    let pool = QUESTION_BANK.filter(q => q.ch === chapterId || chapterId === 5);
-    if (pool.length < 5) pool = QUESTION_BANK; // fallback
-    
-    // Shuffle pool
-    pool = [...pool].sort(() => Math.random() - 0.5).slice(0, 10);
-
-    currentBattle = {
-        chapterId: chapterId,
-        chapterData: chData,
-        questions: pool,
-        qIndex: 0,
-        playerHP: 100,
-        playerMaxHP: 100,
-        playerMP: 50,
-        playerMaxMP: 50,
-        bossHP: 100,
-        bossMaxHP: 100,
-        score: 0,
-        correctCount: 0
+   </div>
+   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </div>
+  <script src="/_sdk/a7e3cd86f9fdaa2f.editing_sdk.js" integrity="sha512-Bik9h+JYuwAghvZ/lBuojdsYhf7jkD8F9umXnwtNo0dw/NSa1YODIJKtqfY7iq3EJZeic2MINdjhkesqLM/vFw=="></script>
+  <script>
+    let playerName="", score=0, correct=0, answered=new Set(), activeQuestion=null, currentLesson=0;
+    const questions = {
+      1:{type:"Multiple Choice",text:"What is −7 + 12?",options:["−19","5","19"],answer:"5"},
+      2:{type:"True / False",text:"True or False: (−4) × (−3) = −12.",options:["True","False"],answer:"False"},
+      3:{type:"Number Answer",text:"Solve the spell: x + 8 = 15. What is x?",answer:"7"},
+      4:{type:"Multiple Choice",text:"A triangle has sides 4 cm, 5 cm, and 6 cm. What is its perimeter?",options:["11 cm","15 cm","20 cm"],answer:"15 cm"}
     };
-
-    document.getElementById('battle-stage-title').textContent = `Ch ${chData.id}: ${chData.boss}`;
-    document.getElementById('boss-name-el').textContent = chData.boss;
-    
-    showScreen('battle-screen');
-    renderQuestion();
-    updateBattleVitals();
-}
-
-function updateBattleVitals() {
-    if (!currentBattle) return;
-    const b = currentBattle;
-    
-    document.getElementById('player-hp-bar').style.width = `${(b.playerHP / b.playerMaxHP) * 100}%`;
-    document.getElementById('player-mp-bar').style.width = `${(b.playerMP / b.playerMaxMP) * 100}%`;
-    document.getElementById('boss-hp-bar').style.width = `${(b.bossHP / b.bossMaxHP) * 100}%`;
-    document.getElementById('battle-score').textContent = b.score;
-    document.getElementById('question-tracker').textContent = `Q: ${b.qIndex + 1}/${b.questions.length}`;
-}
-
-function renderQuestion() {
-    if (!currentBattle) return;
-    const b = currentBattle;
-    const q = b.questions[b.qIndex];
-
-    document.getElementById('problem-text-el').textContent = q.q;
-
-    // Create choices with shuffled display
-    const container = document.getElementById('options-container');
-    container.innerHTML = '';
-
-    // Create choice objects
-    let choices = q.options.map((text, idx) => ({ text, isCorrect: idx === q.answer }));
-    choices.sort(() => Math.random() - 0.5); // Shuffle options
-
-    choices.forEach(choice => {
-        const btn = document.createElement('button');
-        btn.className = 'option-btn';
-        btn.textContent = choice.text;
-        btn.addEventListener('click', () => handleAnswer(choice.isCorrect, q));
-        container.appendChild(btn);
-    });
-}
-
-function spawnFloatingText(text, color, targetEl) {
-    const rect = targetEl.getBoundingClientRect();
-    const el = document.createElement('div');
-    el.className = 'dmg-text';
-    el.style.color = color;
-    el.style.left = `${rect.left + rect.width / 2}px`;
-    el.style.top = `${rect.top}px`;
-    el.textContent = text;
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 800);
-}
-
-function handleAnswer(isCorrect, questionObj) {
-    if (!currentBattle) return;
-    const b = currentBattle;
-
-    if (isCorrect) {
-        audio.playChime();
-        audio.playSpell();
-        
-        b.correctCount++;
-        b.score += 100;
-        b.playerMP = Math.min(b.playerMaxMP, b.playerMP + 10);
-        
-        // Damage Boss
-        const dmg = 20;
-        b.bossHP = Math.max(0, b.bossHP - dmg);
-        spawnFloatingText(`-${dmg}`, '#ffd700', document.getElementById('boss-sprite-el'));
-
-        nextQuestionOrFinish();
-    } else {
-        audio.playThud();
-        
-        // Player takes damage
-        const dmg = 15;
-        b.playerHP = Math.max(0, b.playerHP - dmg);
-        spawnFloatingText(`-${dmg}`, '#ff4757', document.getElementById('player-sprite-el'));
-
-        // Show Explanation Modal
-        showModal(
-            "Spell Miscast!",
-            `<div style="margin-bottom:10px;">The chaotic forces countered your spell.</div>
-             <div class="explanation-box"><strong>Explanation:</strong><br>${questionObj.exp}</div>`,
-            () => {
-                closeModal();
-                if (b.playerHP <= 0) {
-                    finishBattle(false);
-                } else {
-                    nextQuestionOrFinish();
-                }
-            }
-        );
-    }
-
-    updateBattleVitals();
-}
-
-function nextQuestionOrFinish() {
-    const b = currentBattle;
-    if (b.bossHP <= 0 || b.qIndex >= b.questions.length - 1) {
-        finishBattle(b.bossHP <= 0 || b.correctCount >= 5);
-    } else {
-        b.qIndex++;
-        renderQuestion();
-        updateBattleVitals();
-    }
-}
-
-function finishBattle(isVictory) {
-    const b = currentBattle;
-    
-    if (isVictory) {
-        let earnedStars = 1;
-        if (b.correctCount >= 7) earnedStars = 2;
-        if (b.correctCount === 10) earnedStars = 3;
-
-        const idx = b.chapterId - 1;
-        gameState.stars[idx] = Math.max(gameState.stars[idx], earnedStars);
-        
-        const expGained = b.score;
-        const goldGained = Math.floor(b.score / 2);
-        
-        gameState.exp += expGained;
-        gameState.gold += goldGained;
-        if (b.score > gameState.highScore) gameState.highScore = b.score;
-        gameState.sp += 1;
-
-        saveData();
-
-        showModal(
-            "VICTORY!",
-            `<div style="color:var(--primary-gold); font-size:1.2rem; margin-bottom:10px;">Chapter Cleared!</div>
-             <div>Earned: ⭐ ${earnedStars} Stars</div>
-             <div>Rewards: +${expGained} EXP | +${goldGained} Mana Stones</div>`,
-            () => {
-                closeModal();
-                showScreen('map-screen');
-            }
-        );
-    } else {
-        showModal(
-            "DEFEAT",
-            `<div style="color:var(--accent-red); margin-bottom:10px;">The Chaos Vector overwhelmed your mana barriers.</div>
-             <div>Study the Codex and try again!</div>`,
-            () => {
-                closeModal();
-                showScreen('map-screen');
-            }
-        );
-    }
-}
-
-// --- 6. HINT & SCRATCHPAD ---
-document.getElementById('btn-use-hint').addEventListener('click', () => {
-    if (!currentBattle) return;
-    const b = currentBattle;
-
-    if (b.playerMP < 10) {
-        spawnFloatingText("Not enough MP!", "#ff4757", document.getElementById('btn-use-hint'));
-        return;
-    }
-
-    b.playerMP -= 10;
-    updateBattleVitals();
-
-    // Disable 2 incorrect buttons
-    const container = document.getElementById('options-container');
-    const buttons = Array.from(container.children);
-    const q = b.questions[b.qIndex];
-
-    let disabledCount = 0;
-    buttons.forEach(btn => {
-        if (btn.textContent !== q.options[q.answer] && disabledCount < 2 && !btn.disabled) {
-            btn.disabled = true;
-            btn.style.opacity = "0.2";
-            disabledCount++;
-        }
-    });
-});
-
-// Scratchpad Canvas Logic
-const scratchOverlay = document.getElementById('scratchpad-overlay');
-const scratchCanvas = document.getElementById('scratch-canvas');
-const scratchCtx = scratchCanvas.getContext('2d');
-let isDrawing = false;
-
-function resizeScratchCanvas() {
-    scratchCanvas.width = scratchCanvas.clientWidth;
-    scratchCanvas.height = scratchCanvas.clientHeight;
-    scratchCtx.strokeStyle = "#1d1833";
-    scratchCtx.lineWidth = 3;
-    scratchCtx.lineCap = "round";
-}
-
-document.getElementById('btn-open-scratch').addEventListener('click', () => {
-    scratchOverlay.classList.add('active');
-    resizeScratchCanvas();
-});
-
-document.getElementById('btn-close-scratch').addEventListener('click', () => {
-    scratchOverlay.classList.remove('active');
-});
-
-document.getElementById('btn-clear-scratch').addEventListener('click', () => {
-    scratchCtx.clearRect(0, 0, scratchCanvas.width, scratchCanvas.height);
-});
-
-scratchCanvas.addEventListener('pointerdown', (e) => {
-    isDrawing = true;
-    scratchCtx.beginPath();
-    const rect = scratchCanvas.getBoundingClientRect();
-    scratchCtx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
-});
-
-scratchCanvas.addEventListener('pointermove', (e) => {
-    if (!isDrawing) return;
-    const rect = scratchCanvas.getBoundingClientRect();
-    scratchCtx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-    scratchCtx.stroke();
-});
-
-scratchCanvas.addEventListener('pointerup', () => isDrawing = false);
-
-// --- 7. MODAL DIALOG CONTROLLER ---
-function showModal(title, htmlBody, onConfirm) {
-    document.getElementById('modal-title').textContent = title;
-    document.getElementById('modal-body').innerHTML = htmlBody;
-    
-    const btn = document.getElementById('modal-primary-btn');
-    btn.onclick = onConfirm;
-    
-    document.getElementById('game-modal').classList.add('active');
-}
-
-function closeModal() {
-    document.getElementById('game-modal').classList.remove('active');
-}
-
-// --- 8. INITIALIZATION & EVENT BINDINGS ---
-document.getElementById('btn-start-game').addEventListener('click', () => {
-    audio.init();
-    showScreen('map-screen');
-});
-
-document.getElementById('btn-open-sanctuary').addEventListener('click', () => showScreen('sanctuary-screen'));
-document.getElementById('map-to-title').addEventListener('click', () => showScreen('title-screen'));
-document.getElementById('sanctuary-to-title').addEventListener('click', () => showScreen('title-screen'));
-
-// Window resize handler
-window.addEventListener('resize', () => {
-    if (scratchOverlay.classList.contains('active')) {
-        resizeScratchCanvas();
-    }
-});
-
-// Boot Game
-loadSavedData();
-updateUI();
-</script>
-</body>
-</html>
+    function goTo(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));document.getElementById(id).classList.add("active");window.scrollTo(0,0)}
+    function showLesson(index){currentLesson=(index+8)%8;document.querySelectorAll("[data-lesson]").forEach((el,i)=>el.classList.toggle("active",i===currentLesson));document.getElementById("lesson-count").textContent=(currentLesson+1)+" / 8";}
+    document.getElementById("name-form").addEventListener("submit",e=>{e.preventDefault();const input=document.getElementById("player-name");if(!input.value.trim()){document.getElementById("name-error").classList.remove("hidden");input.focus();return}playerName=input.value.trim();document.getElementById("name-error").classList.add("hidden");startGame()});
+    function startGame(){score=0;correct=0;answered=new Set();activeQuestion=null;updateStats();document.querySelectorAll(".board").forEach(b=>b.classList.remove("done"));const p=document.getElementById("player");p.style.left="48%";p.style.top="53%";goTo("game")}
+    function updateStats(){document.getElementById("score").textContent=score;document.getElementById("stars").textContent=correct;document.getElementById("question-number").textContent=answered.size+" / 4";}
+    function openQuestion(id){if(answered.has(id))return;activeQuestion=id;const q=questions[id];document.getElementById("question-type").textContent=q.type;document.getElementById("question-title").textContent=q.text;const options=document.getElementById("answer-options"),form=document.getElementById("number-form");options.innerHTML="";form.classList.toggle("hidden",q.type!=="Number Answer");if(q.type==="Number Answer"){document.getElementById("number-answer").value="";setTimeout(()=>document.getElementById("number-answer").focus(),50)}else q.options.forEach(option=>{const btn=document.createElement("button");btn.type="button";btn.className="answer";btn.textContent=option;btn.addEventListener("click",()=>checkAnswer(option));options.appendChild(btn)});document.getElementById("question-modal").classList.add("show")}
+    document.getElementById("number-form").addEventListener("submit",e=>{e.preventDefault();checkAnswer(document.getElementById("number-answer").value.trim())});
+    function tone(ok){const ctx=new (window.AudioContext||window.webkitAudioContext)(),osc=ctx.createOscillator(),gain=ctx.createGain();osc.frequency.value=ok?740:190;gain.gain.setValueAtTime(.07,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.32);osc.connect(gain);gain.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+.32)}
+    function checkAnswer(value){const q=questions[activeQuestion],ok=String(value).toLowerCase()===String(q.answer).toLowerCase();answered.add(activeQuestion);if(ok){score+=10;correct++}tone(ok);document.getElementById("board-"+activeQuestion).classList.add("done");document.getElementById("question-modal").classList.remove("show");showToast(ok);updateStats();if(answered.size===4)setTimeout(showFinal,700);}
+    function showToast(ok){const t=document.getElementById("toast");t.textContent=ok?"✨ Correct! +10 points and a star!":"Try again next time — keep your magic strong!";t.className="toast "+(ok?"good":"bad")+" show";setTimeout(()=>t.classList.remove("show"),1800)}
+    function showFinal(){const wrong=4-correct,pct=correct*25;document.getElementById("final-greeting").textContent="Well done, "+playerName+"!";document.getElementById("final-score").textContent=score;document.getElementById("final-correct").textContent=correct;document.getElementById("final-wrong").textContent=wrong;document.getElementById("final-percent").textContent=pct+"%";document.getElementById("performance").textContent=pct>=90?"⭐ Math Wizard":pct>=70?"⭐⭐ Magic Scholar":pct>=50?"⭐⭐⭐ Young Explorer":"⭐⭐⭐⭐ Keep Practicing!";goTo("final")}
+    document.addEventListener("keydown",e=>{if(!document.getElementById("game").classList.contains("active")||document.getElementById("question-modal").classList.contains("show"))return;const p=document.getElementById("player"),key=e.key;if(!["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(key))return;e.preventDefault();let x=parseFloat(p.style.left),y=parseFloat(p.style.top);if(key==="ArrowUp")y-=4;if(key==="ArrowDown")y+=4;if(key==="ArrowLeft")x-=4;if(key==="ArrowRight")x+=4;p.style.left=Math.max(2,Math.min(91,x))+"%";p.style.top=Math.max(5,Math.min(82,y))+"%";});
+    lucide.createIcons();
+  </script>
+ 
+</body></html>
