@@ -98,8 +98,7 @@
   <script src="/_sdk/04cc6185e046f597.resizing_sdk.js" type="text/javascript" integrity="sha512-CiE/G92aQF0nxneFg1kdOvXih8sQ1Z2a2QI3+r/WvzJwQqH6+IyB3iL07OkJmpm3ABAaf07+FnqWny98f5sR6w=="></script>
  </head>
  <body data-template-id="__page-root" style="background: linear-gradient(135deg, rgb(25, 18, 82), rgb(97, 55, 159), rgb(14, 129, 121));">
-  <div class="app-shell">
-   <span class="spark" style="top:8%;left:7%;font-size:28px">✦</span> <span class="spark" style="top:17%;right:8%;font-size:22px;animation-delay:.8s">✧</span> <span class="spark" style="bottom:10%;left:13%;font-size:25px;animation-delay:1.4s">✦</span>
+  <div class="app-shell"><span class="spark" style="top:8%;left:7%;font-size:28px">✦</span> <span class="spark" style="top:17%;right:8%;font-size:22px;animation-delay:.8s">✧</span> <span class="spark" style="bottom:10%;left:13%;font-size:25px;animation-delay:1.4s">✦</span>
    <main>
     <section id="home" class="screen active">
      <div class="hero-layout">
@@ -107,12 +106,10 @@
        <p data-template-id="home-kicker" class="canva-text uppercase tracking-[.2em] font-bold text-yellow-200" style="color: rgb(255, 232, 152); font-weight: 700; font-style: normal; font-size: 16px; letter-spacing: 0.1rem;">Grade 7 Mathematics • MEP • Semester 1</p>
        <h1 data-template-id="home-title" class="canva-text font-[Fredoka] font-bold leading-none mt-3" style="color: rgb(255, 240, 168); font-weight: 700; font-style: normal; font-size: 58px;">MAGIC MATH</h1>
        <p data-template-id="home-subtitle" class="canva-text mt-5 max-w-md leading-relaxed" style="color: rgb(247, 239, 255); font-weight: 400; font-style: normal; font-size: 18px; line-height: 1.5;">Learn • Play • Think • Win. Restore the Kingdom of Mathematics!</p>
-       <div class="flex flex-wrap gap-3 mt-8">
-        <button data-template-id="start-button" class="canva-button magic-btn gold-btn" type="button" onclick="goTo('register')" style="background: linear-gradient(135deg, rgb(255, 240, 164), rgb(247, 184, 75)); color: rgb(75, 39, 108); font-weight: 800; font-style: normal; font-size: 16px;">Start Game</button> <button data-template-id="learn-button" class="canva-button magic-btn purple-btn" type="button" onclick="showLesson(0);goTo('learn')" style="background: linear-gradient(135deg, rgb(169, 109, 240), rgb(97, 50, 182)); color: rgb(255, 255, 255); font-weight: 800; font-style: normal; font-size: 16px;">Learn</button> <button data-template-id="how-button" class="canva-button magic-btn soft-btn" type="button" onclick="goTo('how')" style="background: rgba(255, 255, 255, 0.12); color: rgb(255, 255, 255); font-weight: 800; font-style: normal; font-size: 16px;">How to Play</button>
+       <div class="flex flex-wrap gap-3 mt-8"><button data-template-id="start-button" class="canva-button magic-btn gold-btn" type="button" onclick="goTo('register')" style="background: linear-gradient(135deg, rgb(255, 240, 164), rgb(247, 184, 75)); color: rgb(75, 39, 108); font-weight: 800; font-style: normal; font-size: 16px;">Start Game</button> <button data-template-id="learn-button" class="canva-button magic-btn purple-btn" type="button" onclick="showLesson(0);goTo('learn')" style="background: linear-gradient(135deg, rgb(169, 109, 240), rgb(97, 50, 182)); color: rgb(255, 255, 255); font-weight: 800; font-style: normal; font-size: 16px;">Learn</button> <button data-template-id="how-button" class="canva-button magic-btn soft-btn" type="button" onclick="goTo('how')" style="background: rgba(255, 255, 255, 0.12); color: rgb(255, 255, 255); font-weight: 800; font-style: normal; font-size: 16px;">How to Play</button>
        </div>
       </div>
-      <div data-template-id="hero-panel" class="canva-panel hero-image-box glass" style="background: rgba(22, 18, 74, 0.82);">
-       <img data-template-id="hero-image" class="canva-image" loading="lazy" src="https://images.pexels.com/photos/14811903/pexels-photo-14811903.jpeg" alt="A whimsical purple castle illuminated brightly at night, capturing a sense of fantasy.">
+      <div data-template-id="hero-panel" class="canva-panel hero-image-box glass" style="background: rgba(22, 18, 74, 0.82);"><img data-template-id="hero-image" class="canva-image" loading="lazy" src="https://images.pexels.com/photos/14811903/pexels-photo-14811903.jpeg" alt="A whimsical purple castle illuminated brightly at night, capturing a sense of fantasy.">
        <div class="mascot floaty" aria-hidden="true">
         🧙
        </div>
@@ -129,11 +126,9 @@
       </div>
       <h2 data-template-id="register-title" class="canva-text font-[Fredoka] font-bold mt-3" style="color: rgb(255, 240, 168); font-weight: 700; font-style: normal; font-size: 24px;">Choose Your Adventure Avatar</h2>
       <p data-template-id="avatar-label" class="canva-text mt-3" style="color: rgb(245, 236, 255); font-weight: 400; font-style: normal; font-size: 16px;">Pick a magical friend, then enter your wizard name.</p>
-      <div class="avatar-grid" role="group" aria-label="Choose your avatar">
-       <button data-template-id="avatar-boy" class="canva-button avatar-choice selected" type="button" data-avatar="🧙‍♂️" onclick="selectAvatar(this)" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Boy Wizard</button> <button data-template-id="avatar-girl" class="canva-button avatar-choice" type="button" data-avatar="🧙‍♀️" onclick="selectAvatar(this)" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Girl Wizard</button> <button data-template-id="avatar-fairy" class="canva-button avatar-choice" type="button" data-avatar="🧚" onclick="selectAvatar(this)" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Fairy</button> <button data-template-id="avatar-dragon" class="canva-button avatar-choice" type="button" data-avatar="🐉" onclick="selectAvatar(this)" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Baby Dragon</button>
+      <div class="avatar-grid" role="group" aria-label="Choose your avatar"><button data-template-id="avatar-boy" class="canva-button avatar-choice selected" type="button" data-avatar="🧙‍♂️" onclick="selectAvatar(this)" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Boy Wizard</button> <button data-template-id="avatar-girl" class="canva-button avatar-choice" type="button" data-avatar="🧙‍♀️" onclick="selectAvatar(this)" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Girl Wizard</button> <button data-template-id="avatar-fairy" class="canva-button avatar-choice" type="button" data-avatar="🧚" onclick="selectAvatar(this)" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Fairy</button> <button data-template-id="avatar-dragon" class="canva-button avatar-choice" type="button" data-avatar="🐉" onclick="selectAvatar(this)" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Baby Dragon</button>
       </div>
-      <form id="register-form" class="max-w-md mx-auto">
-       <label data-template-id="name-label" class="canva-text block text-left font-bold" for="player-name" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Enter Your Name</label> <input id="player-name" class="canva-input name-input" type="text" maxlength="24" autocomplete="name">
+      <form id="register-form" class="max-w-md mx-auto"><label data-template-id="name-label" class="canva-text block text-left font-bold" for="player-name" style="color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Enter Your Name</label> <input id="player-name" class="canva-input name-input" type="text" maxlength="24" autocomplete="name">
        <p id="name-error" class="hidden text-pink-200 text-sm mb-3" aria-live="polite">Please enter your name.</p><button data-template-id="continue-button" class="canva-button magic-btn gold-btn w-full" type="submit" style="background: linear-gradient(135deg, rgb(255, 240, 164), rgb(247, 184, 75)); color: rgb(75, 39, 108); font-weight: 800; font-style: normal; font-size: 16px;">Continue to Magic Map</button>
       </form><button data-template-id="register-home-button" class="canva-button mt-5 underline text-violet-100" type="button" onclick="goTo('home')" style="color: rgb(238, 229, 255); font-weight: 600; font-style: normal; font-size: 16px;">← Back to Home</button>
      </div>
@@ -152,15 +147,13 @@
        <li data-template-id="how-5" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 400; font-style: normal; font-size: 16px;">Earn stars and restore magical crystals.</li>
        <li data-template-id="how-6" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 400; font-style: normal; font-size: 16px;">Collect all five crystals to become the Grand Math Wizard.</li>
       </ol>
-      <div class="flex justify-center flex-wrap gap-3 mt-8">
-       <button data-template-id="how-home-button" class="canva-button magic-btn soft-btn" type="button" onclick="goTo('home')" style="background: rgba(255, 255, 255, 0.12); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Home</button> <button data-template-id="how-start-button" class="canva-button magic-btn gold-btn" type="button" onclick="goTo('register')" style="background: linear-gradient(135deg, rgb(255, 240, 164), rgb(247, 184, 75)); color: rgb(75, 39, 108); font-weight: 800; font-style: normal; font-size: 16px;">Start Game</button>
+      <div class="flex justify-center flex-wrap gap-3 mt-8"><button data-template-id="how-home-button" class="canva-button magic-btn soft-btn" type="button" onclick="goTo('home')" style="background: rgba(255, 255, 255, 0.12); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Home</button> <button data-template-id="how-start-button" class="canva-button magic-btn gold-btn" type="button" onclick="goTo('register')" style="background: linear-gradient(135deg, rgb(255, 240, 164), rgb(247, 184, 75)); color: rgb(75, 39, 108); font-weight: 800; font-style: normal; font-size: 16px;">Start Game</button>
       </div>
      </div>
     </section>
     <section id="learn" class="screen">
      <div class="lesson-wrap">
-      <div class="flex justify-between items-center gap-3 mb-5">
-       <button data-template-id="lesson-home-button" class="canva-button magic-btn soft-btn" type="button" onclick="goTo('home')" style="background: rgba(255, 255, 255, 0.12); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Home</button>
+      <div class="flex justify-between items-center gap-3 mb-5"><button data-template-id="lesson-home-button" class="canva-button magic-btn soft-btn" type="button" onclick="goTo('home')" style="background: rgba(255, 255, 255, 0.12); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Home</button>
        <p data-template-id="lesson-label" class="canva-text font-bold text-yellow-200" style="color: rgb(255, 232, 152); font-weight: 700; font-style: normal; font-size: 16px;">Spell Book Lessons</p><span id="lesson-count" class="font-bold">1 / 5</span>
       </div>
       <article class="lesson-card active glass" data-lesson="0">
@@ -223,8 +216,7 @@
         🔮
        </div>
       </article>
-      <nav class="flex justify-between mt-5 gap-3" aria-label="Lesson navigation">
-       <button data-template-id="lesson-previous-button" class="canva-button magic-btn soft-btn" type="button" onclick="showLesson(currentLesson-1)" style="background: rgba(255, 255, 255, 0.12); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Previous</button> <button data-template-id="lesson-next-button" class="canva-button magic-btn gold-btn" type="button" onclick="showLesson(currentLesson+1)" style="background: linear-gradient(135deg, rgb(255, 240, 164), rgb(247, 184, 75)); color: rgb(75, 39, 108); font-weight: 800; font-style: normal; font-size: 16px;">Next Lesson</button>
+      <nav class="flex justify-between mt-5 gap-3" aria-label="Lesson navigation"><button data-template-id="lesson-previous-button" class="canva-button magic-btn soft-btn" type="button" onclick="showLesson(currentLesson-1)" style="background: rgba(255, 255, 255, 0.12); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Previous</button> <button data-template-id="lesson-next-button" class="canva-button magic-btn gold-btn" type="button" onclick="showLesson(currentLesson+1)" style="background: linear-gradient(135deg, rgb(255, 240, 164), rgb(247, 184, 75)); color: rgb(75, 39, 108); font-weight: 800; font-style: normal; font-size: 16px;">Next Lesson</button>
       </nav>
      </div>
     </section>
@@ -235,32 +227,38 @@
         <p data-template-id="map-kicker" class="canva-text font-bold text-yellow-200" style="color: rgb(255, 232, 152); font-weight: 700; font-style: normal; font-size: 16px;">Welcome, Young Wizard</p>
         <h2 data-template-id="map-title" class="canva-text font-[Fredoka] font-bold" style="color: rgb(255, 240, 168); font-weight: 700; font-style: normal; font-size: 24px;">Magic Map</h2>
        </div>
-       <div class="stat"><span id="map-avatar">🧙‍♂️</span> <span id="map-welcome"></span>
+       <div class="stat">
+        <span id="map-avatar">🧙‍♂️</span> <span id="map-welcome"></span>
        </div>
       </div>
       <div class="map-grid">
        <section data-template-id="map-panel" class="canva-panel map-panel glass" style="background: rgba(22, 18, 74, 0.82);">
-        <div class="stage-list">
-         <button data-template-id="stage-1" class="canva-button stage-card" type="button" onclick="startLevel(0)" style="background: rgba(255, 255, 255, 0.08); color: rgb(255, 255, 255);"><span class="stage-icon">🏰</span><span><strong>Level 1 — Castle of Integers</strong><br><small>Restore the Blue Crystal</small></span><span class="ml-auto" id="stage-stars-0">☆☆☆</span></button> <button data-template-id="stage-2" class="canva-button stage-card" type="button" onclick="startLevel(1)" disabled="" style="background: rgba(255, 255, 255, 0.08); color: rgb(255, 255, 255);"><span class="stage-icon">🌲</span><span><strong>Level 2 — Forest of Addition</strong><br><small>Restore the Green Crystal</small></span><span class="ml-auto" id="stage-stars-1">🔒</span></button> <button data-template-id="stage-3" class="canva-button stage-card" type="button" onclick="startLevel(2)" disabled="" style="background: rgba(255, 255, 255, 0.08); color: rgb(255, 255, 255);"><span class="stage-icon">💎</span><span><strong>Level 3 — Crystal Cave</strong><br><small>Restore the Purple Crystal</small></span><span class="ml-auto" id="stage-stars-2">🔒</span></button> <button data-template-id="stage-4" class="canva-button stage-card" type="button" onclick="startLevel(3)" disabled="" style="background: rgba(255, 255, 255, 0.08); color: rgb(255, 255, 255);"><span class="stage-icon">📜</span><span><strong>Level 4 — Temple of Fractions</strong><br><small>Restore the Golden Crystal</small></span><span class="ml-auto" id="stage-stars-3">🔒</span></button> <button data-template-id="stage-5" class="canva-button stage-card" type="button" onclick="startLevel(4)" disabled="" style="background: rgba(255, 255, 255, 0.08); color: rgb(255, 255, 255);"><span class="stage-icon">🧙</span><span><strong>Level 5 — Wizard's Tower</strong><br><small>Restore the Rainbow Crystal</small></span><span class="ml-auto" id="stage-stars-4">🔒</span></button>
+        <div class="stage-list"><button data-template-id="stage-1" class="canva-button stage-card" type="button" onclick="startLevel(0)" style="background: rgba(255, 255, 255, 0.08); color: rgb(255, 255, 255);"><span class="stage-icon">🏰</span><span><strong>Level 1 — Castle of Integers</strong><br><small>Restore the Blue Crystal</small></span><span class="ml-auto" id="stage-stars-0">☆☆☆</span></button> <button data-template-id="stage-2" class="canva-button stage-card" type="button" onclick="startLevel(1)" disabled="" style="background: rgba(255, 255, 255, 0.08); color: rgb(255, 255, 255);"><span class="stage-icon">🌲</span><span><strong>Level 2 — Forest of Addition</strong><br><small>Restore the Green Crystal</small></span><span class="ml-auto" id="stage-stars-1">🔒</span></button> <button data-template-id="stage-3" class="canva-button stage-card" type="button" onclick="startLevel(2)" disabled="" style="background: rgba(255, 255, 255, 0.08); color: rgb(255, 255, 255);"><span class="stage-icon">💎</span><span><strong>Level 3 — Crystal Cave</strong><br><small>Restore the Purple Crystal</small></span><span class="ml-auto" id="stage-stars-2">🔒</span></button> <button data-template-id="stage-4" class="canva-button stage-card" type="button" onclick="startLevel(3)" disabled="" style="background: rgba(255, 255, 255, 0.08); color: rgb(255, 255, 255);"><span class="stage-icon">📜</span><span><strong>Level 4 — Temple of Fractions</strong><br><small>Restore the Golden Crystal</small></span><span class="ml-auto" id="stage-stars-3">🔒</span></button> <button data-template-id="stage-5" class="canva-button stage-card" type="button" onclick="startLevel(4)" disabled="" style="background: rgba(255, 255, 255, 0.08); color: rgb(255, 255, 255);"><span class="stage-icon">🧙</span><span><strong>Level 5 — Wizard's Tower</strong><br><small>Restore the Rainbow Crystal</small></span><span class="ml-auto" id="stage-stars-4">🔒</span></button>
         </div>
        </section>
        <aside class="space-y-4">
         <section data-template-id="collection-panel" class="canva-panel map-panel glass" style="background: rgba(22, 18, 74, 0.82);">
          <h3 data-template-id="collection-title" class="canva-text font-[Fredoka] font-bold" style="color: rgb(255, 240, 168); font-weight: 700; font-style: normal; font-size: 19px;">Crystal Collection</h3>
-         <div class="crystal-row" aria-label="Crystal collection"><span id="crystal-0" class="crystal">💙</span><span id="crystal-1" class="crystal">💚</span><span id="crystal-2" class="crystal">💜</span><span id="crystal-3" class="crystal">💛</span><span id="crystal-4" class="crystal">🌈</span>
+         <div class="crystal-row" aria-label="Crystal collection">
+          <span id="crystal-0" class="crystal">💙</span><span id="crystal-1" class="crystal">💚</span><span id="crystal-2" class="crystal">💜</span><span id="crystal-3" class="crystal">💛</span><span id="crystal-4" class="crystal">🌈</span>
          </div>
         </section>
         <section data-template-id="passport-panel" class="canva-panel map-panel glass" style="background: rgba(22, 18, 74, 0.82);">
          <h3 data-template-id="passport-title" class="canva-text font-[Fredoka] font-bold" style="color: rgb(255, 240, 168); font-weight: 700; font-style: normal; font-size: 19px;">Magic Passport</h3>
-         <div class="passport-item"><span>Castle of Integers</span><span id="stamp-0">○</span>
+         <div class="passport-item">
+          <span>Castle of Integers</span><span id="stamp-0">○</span>
          </div>
-         <div class="passport-item"><span>Forest of Addition</span><span id="stamp-1">○</span>
+         <div class="passport-item">
+          <span>Forest of Addition</span><span id="stamp-1">○</span>
          </div>
-         <div class="passport-item"><span>Crystal Cave</span><span id="stamp-2">○</span>
+         <div class="passport-item">
+          <span>Crystal Cave</span><span id="stamp-2">○</span>
          </div>
-         <div class="passport-item"><span>Temple of Fractions</span><span id="stamp-3">○</span>
+         <div class="passport-item">
+          <span>Temple of Fractions</span><span id="stamp-3">○</span>
          </div>
-         <div class="passport-item"><span>Wizard's Tower</span><span id="stamp-4">○</span>
+         <div class="passport-item">
+          <span>Wizard's Tower</span><span id="stamp-4">○</span>
          </div>
         </section><button data-template-id="map-home-button" class="canva-button magic-btn soft-btn w-full" type="button" onclick="goTo('home')" style="background: rgba(255, 255, 255, 0.12); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Home</button>
        </aside>
@@ -269,8 +267,7 @@
     </section>
     <section id="mission" class="screen">
      <div class="mission-wrap">
-      <div class="mission-top">
-       <button data-template-id="mission-map-button" class="canva-button magic-btn soft-btn" type="button" onclick="goTo('map')" style="background: rgba(255, 255, 255, 0.12); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Magic Map</button>
+      <div class="mission-top"><button data-template-id="mission-map-button" class="canva-button magic-btn soft-btn" type="button" onclick="goTo('map')" style="background: rgba(255, 255, 255, 0.12); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Magic Map</button>
        <div class="flex gap-2 flex-wrap">
         <div class="stat">
          🏆 <span id="score">0</span>
@@ -308,19 +305,22 @@
       <p id="complete-player" class="text-xl font-bold mt-3"></p>
       <p id="complete-lesson" class="text-violet-100 mt-1"></p>
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-7 text-left">
-       <div class="stat"><span>Correct</span><strong id="complete-correct" class="block text-xl"></strong>
+       <div class="stat">
+        <span>Correct</span><strong id="complete-correct" class="block text-xl"></strong>
        </div>
-       <div class="stat"><span>Wrong</span><strong id="complete-wrong" class="block text-xl"></strong>
+       <div class="stat">
+        <span>Wrong</span><strong id="complete-wrong" class="block text-xl"></strong>
        </div>
-       <div class="stat"><span>Accuracy</span><strong id="complete-accuracy" class="block text-xl"></strong>
+       <div class="stat">
+        <span>Accuracy</span><strong id="complete-accuracy" class="block text-xl"></strong>
        </div>
-       <div class="stat"><span>Score</span><strong id="complete-score" class="block text-xl"></strong>
+       <div class="stat">
+        <span>Score</span><strong id="complete-score" class="block text-xl"></strong>
        </div>
       </div>
       <p id="complete-stars" class="mt-6 text-2xl text-yellow-200 font-bold"></p>
       <p id="complete-message" class="mt-3 font-bold"></p>
-      <div class="flex justify-center flex-wrap gap-3 mt-8">
-       <button data-template-id="next-level-button" class="canva-button magic-btn gold-btn" type="button" onclick="nextFromComplete()" style="background: linear-gradient(135deg, rgb(255, 240, 164), rgb(247, 184, 75)); color: rgb(75, 39, 108); font-weight: 800; font-style: normal; font-size: 16px;">Next Level</button> <button data-template-id="replay-level-button" class="canva-button magic-btn purple-btn" type="button" onclick="startLevel(currentStage)" style="background: linear-gradient(135deg, rgb(169, 109, 240), rgb(97, 50, 182)); color: rgb(255, 255, 255); font-weight: 800; font-style: normal; font-size: 16px;">Replay Level</button> <button data-template-id="complete-map-button" class="canva-button magic-btn soft-btn" type="button" onclick="goTo('map')" style="background: rgba(255, 255, 255, 0.12); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Magic Map</button>
+      <div class="flex justify-center flex-wrap gap-3 mt-8"><button data-template-id="next-level-button" class="canva-button magic-btn gold-btn" type="button" onclick="nextFromComplete()" style="background: linear-gradient(135deg, rgb(255, 240, 164), rgb(247, 184, 75)); color: rgb(75, 39, 108); font-weight: 800; font-style: normal; font-size: 16px;">Next Level</button> <button data-template-id="replay-level-button" class="canva-button magic-btn purple-btn" type="button" onclick="startLevel(currentStage)" style="background: linear-gradient(135deg, rgb(169, 109, 240), rgb(97, 50, 182)); color: rgb(255, 255, 255); font-weight: 800; font-style: normal; font-size: 16px;">Replay Level</button> <button data-template-id="complete-map-button" class="canva-button magic-btn soft-btn" type="button" onclick="goTo('map')" style="background: rgba(255, 255, 255, 0.12); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Magic Map</button>
       </div>
      </div>
     </section>
@@ -374,15 +374,13 @@
         🏅 Magic Champion
        </div>
       </div>
-      <div class="flex justify-center flex-wrap gap-3 mt-8">
-       <button data-template-id="view-certificate-button" class="canva-button magic-btn gold-btn" type="button" onclick="showCertificate()" style="background: linear-gradient(135deg, rgb(255, 240, 164), rgb(247, 184, 75)); color: rgb(75, 39, 108); font-weight: 800; font-style: normal; font-size: 16px;">View Certificate</button> <button data-template-id="play-again-button" class="canva-button magic-btn purple-btn" type="button" onclick="resetGame();goTo('map')" style="background: linear-gradient(135deg, rgb(169, 109, 240), rgb(97, 50, 182)); color: rgb(255, 255, 255); font-weight: 800; font-style: normal; font-size: 16px;">Play Again</button> <button data-template-id="final-home-button" class="canva-button magic-btn soft-btn" type="button" onclick="goTo('home')" style="background: rgba(255, 255, 255, 0.12); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Home</button>
+      <div class="flex justify-center flex-wrap gap-3 mt-8"><button data-template-id="view-certificate-button" class="canva-button magic-btn gold-btn" type="button" onclick="showCertificate()" style="background: linear-gradient(135deg, rgb(255, 240, 164), rgb(247, 184, 75)); color: rgb(75, 39, 108); font-weight: 800; font-style: normal; font-size: 16px;">View Certificate</button> <button data-template-id="play-again-button" class="canva-button magic-btn purple-btn" type="button" onclick="resetGame();goTo('map')" style="background: linear-gradient(135deg, rgb(169, 109, 240), rgb(97, 50, 182)); color: rgb(255, 255, 255); font-weight: 800; font-style: normal; font-size: 16px;">Play Again</button> <button data-template-id="final-home-button" class="canva-button magic-btn soft-btn" type="button" onclick="goTo('home')" style="background: rgba(255, 255, 255, 0.12); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Home</button>
       </div>
      </div>
     </section>
     <section id="certificate-screen" class="screen">
      <div class="certificate-wrap">
-      <div class="print-hide flex justify-between gap-3 mb-5">
-       <button data-template-id="certificate-back-button" class="canva-button magic-btn soft-btn" type="button" onclick="goTo('final')" style="background: rgba(255, 255, 255, 0.12); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Back to Results</button> <button data-template-id="download-certificate-button" class="canva-button magic-btn gold-btn" type="button" onclick="window.print()" style="background: linear-gradient(135deg, rgb(255, 240, 164), rgb(247, 184, 75)); color: rgb(75, 39, 108); font-weight: 800; font-style: normal; font-size: 16px;">Download Certificate</button>
+      <div class="print-hide flex justify-between gap-3 mb-5"><button data-template-id="certificate-back-button" class="canva-button magic-btn soft-btn" type="button" onclick="goTo('final')" style="background: rgba(255, 255, 255, 0.12); color: rgb(255, 255, 255); font-weight: 700; font-style: normal; font-size: 16px;">Back to Results</button> <button data-template-id="download-certificate-button" class="canva-button magic-btn gold-btn" type="button" onclick="window.print()" style="background: linear-gradient(135deg, rgb(255, 240, 164), rgb(247, 184, 75)); color: rgb(75, 39, 108); font-weight: 800; font-style: normal; font-size: 16px;">Download Certificate</button>
       </div>
       <div class="certificate">
        <div class="text-4xl">
@@ -502,8 +500,8 @@
       const stage=stages[currentStage], q=stage.questions[questionIndex], correct=answer===q[2];
       document.querySelectorAll(".answer").forEach(b=>b.disabled=true);
       if(correct){totalScore+=10;totalCorrect++;levelCorrect++;button.style.background="rgba(101,220,158,.4)";showToast("✨ Fantastic! +10 points","good");}
-      else{button.style.background="rgba(239,102,139,.34)";showToast("Keep trying! The magic grows with practice.","bad");}
-      document.getElementById("feedback").textContent=correct?["Fantastic!","Amazing!","Brilliant!","Excellent!","Outstanding!"][questionIndex]:"Almost there! Don't give up!";
+      else{button.style.background="rgba(239,102,139,.34)";showToast("Keep trying! The magic grows with practice.","bad");const correctBtn=Array.from(document.querySelectorAll(".answer")).find(b=>b.textContent===q[2]);if(correctBtn)correctBtn.style.background="rgba(255,240,164,.3)";}
+      document.getElementById("feedback").textContent=correct?["Fantastic!","Amazing!","Brilliant!","Excellent!","Outstanding!"][questionIndex]:"The correct answer is: "+q[2];
       setTimeout(()=>{
         questionIndex++;
         if(questionIndex<5)renderQuestion(); else finishLevel();
