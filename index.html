@@ -1,810 +1,1187 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Magic Math: Educational RPG</title>
-<style>
-    /* ----- CORE VARIABLES & RESET ----- */
-    :root {
-        --bg-color: #0f0c29;
-        --panel-bg: rgba(30, 27, 75, 0.85);
-        --primary: #8b5cf6;
-        --primary-hover: #7c3aed;
-        --secondary: #ec4899;
-        --accent: #f59e0b;
-        --text: #f8fafc;
-        --text-muted: #cbd5e1;
-        --hp-color: #ef4444;
-        --mp-color: #3b82f6;
-        --correct: #10b981;
-        --wrong: #f43f5e;
-        --font-main: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Magic Math - Grade 7 Educational RPG</title>
+    <style>
+        :root {
+            --bg-dark: #0f0c1b;
+            --bg-card: #1d1833;
+            --bg-card-light: #2a2447;
+            --primary-gold: #ffd700;
+            --primary-gold-dark: #c5a000;
+            --accent-blue: #00d2ff;
+            --accent-purple: #9d4edd;
+            --accent-red: #ff4757;
+            --accent-green: #2ed573;
+            --text-light: #f1f2f6;
+            --text-dim: #a4b0be;
+            --font-title: 'Georgia', serif;
+            --font-body: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --shadow-glow: 0 0 15px rgba(0, 210, 255, 0.4);
+            --shadow-gold: 0 0 15px rgba(255, 215, 0, 0.4);
+            --border-radius: 12px;
+        }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
 
-    body {
-        background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-        color: var(--text);
-        font-family: var(--font-main);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        width: 100vw;
-        overflow: hidden;
-        touch-action: none;
-    }
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-dark);
+            font-family: var(--font-body);
+            color: var(--text-light);
+            position: fixed;
+        }
 
-    /* ----- LAYOUT ----- */
-    #app {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        max-width: 1280px;
-        background: radial-gradient(circle at center, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
-        box-shadow: 0 0 50px rgba(0,0,0,0.5);
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
+        #app-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: radial-gradient(circle at center, #1a153a 0%, #08060f 100%);
+        }
 
-    @media (min-aspect-ratio: 16/9) and (min-width: 1024px) {
-        #app { height: 100vh; max-height: 720px; aspect-ratio: 16/9; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
-    }
+        /* Responsive typography & layout bases */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+            padding: clamp(10px, 3vw, 25px);
+            overflow-y: auto;
+        }
 
-    .screen {
-        display: none;
-        flex-direction: column;
-        width: 100%;
-        height: 100%;
-        padding: clamp(10px, 3vh, 30px);
-        position: absolute;
-        top: 0; left: 0;
-        z-index: 10;
-        animation: fadeIn 0.4s ease;
-        overflow-y: auto;
-        overflow-x: hidden;
-        align-items: center;
-    }
-    .screen.active { display: flex; }
+        .screen.active {
+            opacity: 1;
+            pointer-events: all;
+            z-index: 20;
+        }
 
-    /* Centering trick that allows scrolling without cutting top content */
-    .center-col { justify-content: flex-start; gap: 20px; }
-    .center-col::before, .center-col::after { content: ''; margin: auto; }
+        /* Buttons */
+        .btn {
+            background: linear-gradient(135deg, var(--bg-card-light) 0%, var(--bg-card) 100%);
+            border: 2px solid var(--accent-blue);
+            color: var(--text-light);
+            padding: clamp(8px, 2vh, 14px) clamp(16px, 4vw, 28px);
+            font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+            font-weight: bold;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-align: center;
+        }
 
-    /* ----- UI COMPONENTS ----- */
-    h1, h2, h3 { font-weight: 800; text-align: center; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-    h1 { font-size: clamp(2rem, 5vw, 4rem); color: var(--accent); letter-spacing: 2px; }
-    h2 { font-size: clamp(1.5rem, 4vw, 2.5rem); color: var(--primary); }
-    
-    .panel {
-        background: var(--panel-bg);
-        border: 2px solid rgba(139, 92, 246, 0.4);
-        border-radius: 16px;
-        padding: clamp(15px, 3vw, 30px);
-        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        backdrop-filter: blur(8px);
-        width: 100%;
-    }
+        .btn:hover, .btn:active {
+            transform: translateY(-2px);
+            border-color: var(--primary-gold);
+            box-shadow: var(--shadow-glow);
+        }
 
-    .btn {
-        background: linear-gradient(180deg, var(--primary), var(--primary-hover));
-        color: white;
-        border: 2px solid rgba(255,255,255,0.2);
-        border-radius: 12px;
-        padding: clamp(12px, 2vh, 20px) clamp(20px, 4vw, 40px);
-        font-size: clamp(1rem, 2.5vw, 1.5rem);
-        font-weight: 700;
-        cursor: pointer;
-        transition: transform 0.1s, box-shadow 0.2s, background 0.2s;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-        box-shadow: 0 4px 0 rgba(0,0,0,0.4);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        width: auto;
-    }
-    .btn:active { transform: translateY(4px); box-shadow: 0 0 0 rgba(0,0,0,0.4); }
-    .btn:disabled { filter: grayscale(1); opacity: 0.5; pointer-events: none; }
-    .btn.secondary { background: linear-gradient(180deg, #475569, #334155); }
+        .btn-gold {
+            background: linear-gradient(135deg, var(--primary-gold) 0%, var(--primary-gold-dark) 100%);
+            color: #000;
+            border-color: #fff;
+            box-shadow: var(--shadow-gold);
+        }
 
-    /* ----- PROGRESS BARS ----- */
-    .stat-bar-container {
-        width: 100%;
-        background: #1e293b;
-        border: 2px solid #0f172a;
-        border-radius: 8px;
-        height: clamp(16px, 3vh, 24px);
-        position: relative;
-        overflow: hidden;
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
-    }
-    .stat-bar {
-        height: 100%;
-        width: 100%;
-        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-    }
-    .stat-bar::after {
-        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 30%;
-        background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 100%);
-    }
-    .hp-fill { background: linear-gradient(90deg, #b91c1c, var(--hp-color)); }
-    .mp-fill { background: linear-gradient(90deg, #1d4ed8, var(--mp-color)); }
-    .xp-fill { background: linear-gradient(90deg, #047857, var(--correct)); }
-    .timer-fill { background: linear-gradient(90deg, var(--accent), #fbbf24); }
+        .btn-gold:hover, .btn-gold:active {
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.8);
+        }
 
-    .stat-labels {
-        display: flex; justify-content: space-between;
-        font-size: clamp(0.7rem, 2vw, 1rem); font-weight: bold;
-        margin-bottom: 2px; text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-    }
+        .btn-red {
+            border-color: var(--accent-red);
+            background: linear-gradient(135deg, #8b0000 0%, #4a0000 100%);
+        }
 
-    /* ----- SCREENS ----- */
-    /* Menu & Map */
-    .stats-header {
-        display: flex; flex-wrap: wrap; justify-content: space-around; gap: 10px;
-        background: rgba(0,0,0,0.4); padding: 10px; border-radius: 12px; width: 100%; text-align: center;
-        border: 1px solid rgba(255,255,255,0.1);
-    }
-    .stat-box { flex: 1; min-width: 60px; display: flex; flex-direction: column; font-size: clamp(0.8rem, 2vw, 1.2rem); }
-    .stat-value { color: var(--accent); font-weight: 900; font-size: clamp(1.2rem, 3vw, 1.8rem); }
+        /* Title Screen */
+        #title-screen {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            gap: 20px;
+            background: radial-gradient(circle at center, #2e1d52 0%, #08060f 80%);
+        }
 
-    .map-grid {
-        display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: clamp(10px, 2vw, 20px);
-        width: 100%; max-width: 800px;
-    }
-    .map-node {
-        background: var(--panel-bg); border: 2px solid var(--primary); border-radius: 16px;
-        padding: 20px 10px; text-align: center; cursor: pointer;
-        transition: transform 0.2s, background 0.2s;
-        display: flex; flex-direction: column; align-items: center; gap: 10px;
-    }
-    .map-node:hover { transform: scale(1.05); background: rgba(139, 92, 246, 0.4); }
-    .map-node .icon { font-size: clamp(2rem, 6vw, 4rem); }
-    .map-node .title { font-weight: bold; font-size: clamp(1rem, 2.5vw, 1.2rem); color: var(--text); }
-    .map-node .desc { font-size: clamp(0.75rem, 2vw, 0.9rem); color: var(--text-muted); }
+        .title-logo {
+            font-family: var(--font-title);
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            color: var(--primary-gold);
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(157, 78, 221, 0.8);
+            letter-spacing: 2px;
+            animation: pulse-title 3s infinite alternate;
+        }
 
-    /* Combat Screen */
-    #screen-combat { padding: 10px; display: flex; flex-direction: column; gap: 10px; justify-content: flex-start; }
-    
-    .hud { display: flex; justify-content: space-between; gap: 10px; width: 100%; }
-    .entity-hud { flex: 1; display: flex; flex-direction: column; gap: 5px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
-    
-    .combat-arena {
-        flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px;
-        position: relative; width: 100%; min-height: 350px;
-    }
-    
-    .enemy-sprite {
-        font-size: clamp(4rem, 15vh, 8rem);
-        filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
-        animation: float 3s ease-in-out infinite;
-        position: relative;
-    }
+        @keyframes pulse-title {
+            0% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.6)); }
+            100% { transform: scale(1.03); filter: drop-shadow(0 0 30px rgba(0, 210, 255, 0.8)); }
+        }
 
-    .math-board {
-        background: #fdf6e3; color: #1e293b; border: 4px solid var(--accent); border-radius: 12px;
-        padding: clamp(10px, 3vw, 20px); width: 100%; max-width: 600px; text-align: center;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-top: 10px;
-    }
-    .question-text { font-size: clamp(1.5rem, 5vw, 2.5rem); font-weight: 900; margin: 10px 0; letter-spacing: 1px; }
-    
-    .timer-wrap { margin-bottom: 10px; }
+        .subtitle {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            color: var(--accent-blue);
+            margin-top: -10px;
+        }
 
-    .answers-grid {
-        display: grid; grid-template-columns: 1fr 1fr; gap: clamp(10px, 2vw, 15px);
-        width: 100%; max-width: 600px; margin: 0 auto;
-    }
-    .answer-btn {
-        background: var(--panel-bg); color: var(--text); border: 2px solid var(--primary);
-        border-radius: 12px; padding: clamp(15px, 3vh, 25px); font-size: clamp(1.2rem, 4vw, 1.8rem);
-        font-weight: bold; cursor: pointer; transition: all 0.1s;
-        display: flex; justify-content: center; align-items: center;
-    }
-    .answer-btn:active { transform: scale(0.95); }
-    .answer-btn.correct { background: var(--correct); border-color: #059669; }
-    .answer-btn.wrong { background: var(--wrong); border-color: #be123c; }
-    .answer-btn.disabled { opacity: 0.3; pointer-events: none; }
+        .rank-badge-title {
+            background: var(--bg-card);
+            border: 1px solid var(--primary-gold);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: clamp(0.8rem, 2vw, 1rem);
+            color: var(--primary-gold);
+            box-shadow: var(--shadow-gold);
+        }
 
-    .combat-controls {
-        display: flex; justify-content: space-between; width: 100%; max-width: 600px; margin: 0 auto; gap: 10px;
-    }
-    .tool-btn {
-        flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: bold; color: white; cursor: pointer;
-        display: flex; align-items: center; justify-content: center; gap: 5px; font-size: clamp(0.8rem, 2.5vw, 1rem);
-    }
-    .hint-btn { background: var(--mp-color); }
-    .flee-btn { background: #64748b; }
+        /* Overworld Map */
+        #map-screen {
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+        }
 
-    /* Overlay (Explanations) */
-    .overlay {
-        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0,0,0,0.85); backdrop-filter: blur(4px);
-        display: none; flex-direction: column; justify-content: center; align-items: center;
-        z-index: 100; padding: 20px; text-align: center;
-    }
-    .overlay.active { display: flex; animation: fadeIn 0.2s; }
-    .dialog-box {
-        background: var(--panel-bg); border: 2px solid var(--primary); border-radius: 16px;
-        padding: 30px; max-width: 500px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-    }
-    .dialog-title { font-size: 1.5rem; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px;}
-    .dialog-text { font-size: 1.2rem; margin-bottom: 25px; line-height: 1.5; color: var(--text-muted); }
+        .header-bar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(29, 24, 51, 0.85);
+            backdrop-filter: blur(8px);
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255,255,255,0.1);
+            gap: 10px;
+        }
 
-    /* Damage Texts & Particles */
-    .dmg-text {
-        position: absolute; font-weight: 900; font-size: 2rem; pointer-events: none;
-        animation: floatUp 1s ease-out forwards; text-shadow: 0 0 4px #000;
-    }
+        .player-info-pill {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: clamp(0.8rem, 2vw, 1rem);
+        }
 
-    /* Animations */
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
-    @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-50px) scale(1.5); } }
+        .stat-badge {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(0,0,0,0.4);
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
 
-    /* Landscape specific tweaks */
-    @media (orientation: landscape) and (max-height: 600px) {
-        .combat-arena { flex-direction: row; justify-content: space-evenly; }
-        .enemy-sprite { font-size: clamp(3rem, 20vh, 6rem); margin-bottom: 0; }
-        .math-board { max-width: 45%; margin-top: 0; }
-        .answers-grid { max-width: 45%; }
-    }
-</style>
+        .map-nodes-container {
+            width: 100%;
+            max-width: 900px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            position: relative;
+            margin: 20px 0;
+            gap: 15px;
+        }
+
+        .chapter-node {
+            width: 100%;
+            max-width: 500px;
+            background: var(--bg-card);
+            border: 2px solid var(--accent-purple);
+            border-radius: var(--border-radius);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            position: relative;
+        }
+
+        .chapter-node:hover {
+            transform: scale(1.02);
+            border-color: var(--primary-gold);
+            box-shadow: var(--shadow-gold);
+        }
+
+        .chapter-node.locked {
+            opacity: 0.5;
+            filter: grayscale(0.8);
+            cursor: not-allowed;
+            border-color: #555;
+        }
+
+        .node-info h3 {
+            font-size: clamp(1rem, 2.5vw, 1.3rem);
+            color: var(--primary-gold);
+        }
+
+        .node-info p {
+            font-size: clamp(0.75rem, 1.8vw, 0.9rem);
+            color: var(--text-dim);
+        }
+
+        .stars-container {
+            color: var(--primary-gold);
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+
+        /* Sanctuary / Inventory Screen */
+        .sanctuary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            width: 100%;
+            max-width: 1000px;
+            margin: 15px auto;
+        }
+
+        .panel-card {
+            background: var(--bg-card);
+            border: 1px solid var(--accent-purple);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .panel-card h2 {
+            font-size: 1.2rem;
+            color: var(--accent-blue);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 6px;
+        }
+
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card-light);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        /* Combat Battle Screen */
+        #battle-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 10px;
+            gap: 10px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .battle-arena {
+            width: 100%;
+            height: clamp(180px, 30vh, 320px);
+            background: rgba(15, 12, 27, 0.6);
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255,255,255,0.15);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 20px clamp(10px, 5vw, 60px);
+        }
+
+        #battle-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .combatant {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            width: clamp(100px, 25vw, 160px);
+        }
+
+        .sprite {
+            width: clamp(70px, 18vw, 120px);
+            height: clamp(70px, 18vw, 120px);
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.7));
+            transition: transform 0.2s ease;
+        }
+
+        .player-sprite {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="30" r="20" fill="%23ffd700"/><path d="M20,90 Q50,40 80,90 Z" fill="%2300d2ff"/><polygon points="50,5 35,25 65,25" fill="%239d4edd"/><circle cx="50" cy="12" r="4" fill="%23ffd700"/></svg>');
+        }
+
+        .boss-sprite {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,10 90,80 10,80" fill="%23ff4757"/><circle cx="50" cy="50" r="25" fill="%231d1833"/><circle cx="50" cy="50" r="10" fill="%23ffd700"/><path d="M30,30 L10,10 M70,30 L90,10" stroke="%23ff4757" stroke-width="5"/></svg>');
+        }
+
+        .vitals-box {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 8px;
+            padding: 6px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .vitals-name {
+            font-size: clamp(0.75rem, 1.8vw, 0.9rem);
+            font-weight: bold;
+            color: var(--primary-gold);
+            margin-bottom: 4px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .bar-container {
+            width: 100%;
+            height: 10px;
+            background: #333;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 3px;
+            position: relative;
+        }
+
+        .bar-fill {
+            height: 100%;
+            width: 100%;
+            transition: width 0.3s ease-out;
+        }
+
+        .hp-fill { background: linear-gradient(90deg, #ff4757, #2ed573); }
+        .mp-fill { background: linear-gradient(90deg, #5352ed, #00d2ff); }
+
+        /* Problem & Action Panel */
+        .action-panel {
+            background: var(--bg-card);
+            border: 2px solid var(--accent-purple);
+            border-radius: var(--border-radius);
+            padding: clamp(10px, 2.5vw, 18px);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.6);
+            z-index: 5;
+        }
+
+        .problem-card {
+            background: var(--bg-card-light);
+            padding: 12px clamp(10px, 3vw, 20px);
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-blue);
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .problem-text {
+            font-size: clamp(1rem, 2.5vw, 1.25rem);
+            font-weight: bold;
+            color: #fff;
+            line-height: 1.4;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        @media (max-width: 500px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .option-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: clamp(10px, 2vh, 14px);
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            color: var(--text-light);
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+        }
+
+        .option-btn:hover {
+            background: var(--bg-card-light);
+            border-color: var(--accent-blue);
+        }
+
+        .battle-controls-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* Overlay Canvas / Scratchpad Drawer */
+        #scratchpad-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 12, 27, 0.95);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            padding: 15px;
+        }
+
+        #scratchpad-overlay.active {
+            display: flex;
+        }
+
+        .scratchpad-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        #scratch-canvas {
+            flex-grow: 1;
+            background: #ffffff;
+            border-radius: var(--border-radius);
+            cursor: crosshair;
+            touch-action: none;
+        }
+
+        /* Modal Dialogs */
+        .modal-overlay {
+            position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(5px);
+            z-index: 150;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-box {
+            background: var(--bg-card);
+            border: 2px solid var(--primary-gold);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: var(--shadow-gold);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            color: var(--primary-gold);
+            font-family: var(--font-title);
+        }
+
+        .explanation-box {
+            background: rgba(255,71,87,0.15);
+            border: 1px solid var(--accent-red);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: #ffdae0;
+            text-align: left;
+            line-height: 1.4;
+        }
+
+        /* Floating FX */
+        .dmg-text {
+            position: absolute;
+            font-weight: bold;
+            font-size: 1.5rem;
+            animation: floatUp 0.8s ease-out forwards;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            50% { transform: translateY(-20px) scale(1.3); }
+            100% { opacity: 0; transform: translateY(-40px) scale(0.8); }
+        }
+
+        /* Responsive Utilities */
+        @media (max-width: 600px) {
+            .header-bar { flex-direction: column; align-items: flex-start; gap: 5px; }
+            .battle-arena { height: 180px; padding: 10px; }
+            .combatant { width: 90px; }
+            .sprite { width: 60px; height: 60px; }
+        }
+    </style>
 </head>
 <body>
 
-<div id="app">
-    <!-- SCREEN 1: SPLASH / MAIN MENU -->
-    <div id="screen-menu" class="screen active center-col">
-        <h1>MAGIC MATH</h1>
-        <h2 style="color: var(--text-muted); font-size: 1.2rem;">Grade 7 Math RPG</h2>
-        
-        <div class="panel" style="max-width: 600px;">
-            <div class="stats-header">
-                <div class="stat-box"><span>Level</span><span class="stat-value" id="menu-lvl">1</span></div>
-                <div class="stat-box"><span>Rank</span><span class="stat-value" id="menu-rank" style="font-size: 1rem;">Novice</span></div>
-                <div class="stat-box"><span>Stars</span><span class="stat-value" id="menu-stars">0</span></div>
-                <div class="stat-box"><span>Gold</span><span class="stat-value" id="menu-gold">0</span></div>
-            </div>
-            <div style="margin-top: 15px;">
-                <div class="stat-labels"><span>XP to next Level</span><span id="menu-xp-text">0/100</span></div>
-                <div class="stat-bar-container"><div id="menu-xp-bar" class="stat-bar xp-fill" style="width: 0%;"></div></div>
-            </div>
-        </div>
+<div id="app-container">
 
-        <button class="btn" onclick="openMap()">⚔️ Enter Arithmia</button>
-        <button class="btn secondary" onclick="resetSave()" style="font-size: 0.9rem; padding: 10px 20px;">Reset Progress</button>
+    <!-- 1. TITLE SCREEN -->
+    <div id="title-screen" class="screen active">
+        <div class="title-logo">MAGIC MATH</div>
+        <div class="subtitle">Arithmetica's Last Mathemancer</div>
+        <div class="rank-badge-title" id="title-rank-display">Rank: Novice Counter</div>
+        <div style="display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 280px; margin-top: 15px;">
+            <button class="btn btn-gold" id="btn-start-game">START ADVENTURE</button>
+            <button class="btn" id="btn-open-sanctuary">SANCTUARY & GEAR</button>
+        </div>
+        <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 20px;">
+            Grade 7 (Mathayom 1) Curriculum Aligned
+        </div>
     </div>
 
-    <!-- SCREEN 2: WORLD MAP -->
-    <div id="screen-map" class="screen center-col">
-        <h2>Realm of Arithmia</h2>
-        <div class="map-grid">
-            <div class="map-node" onclick="startLevel(0)">
-                <div class="icon">🏝️</div>
-                <div class="title">Integer Isles</div>
-                <div class="desc">Ch 1: Abs & Integers</div>
+    <!-- 2. OVERWORLD MAP SCREEN -->
+    <div id="map-screen" class="screen">
+        <div class="header-bar">
+            <div class="player-info-pill">
+                <span id="map-player-rank" style="color: var(--primary-gold); font-weight: bold;">Novice Counter</span>
+                <div class="stat-badge">⭐ <span id="map-total-stars">0</span>/15</div>
             </div>
-            <div class="map-node" onclick="startLevel(1)">
-                <div class="icon">🌲</div>
-                <div class="title">Fraction Forest</div>
-                <div class="desc">Ch 2: Frac, GCD, LCM</div>
-            </div>
-            <div class="map-node" onclick="startLevel(2)">
-                <div class="icon">🏜️</div>
-                <div class="title">Decimal Desert</div>
-                <div class="desc">Ch 3: Decimals</div>
-            </div>
-            <div class="map-node" onclick="startLevel(3)">
-                <div class="icon">🏰</div>
-                <div class="title">Equation Spire</div>
-                <div class="desc">Ch 4: Linear Equations</div>
+            <div class="player-info-pill">
+                <div class="stat-badge">💧 <span id="map-gold">50</span> Mana Stones</div>
+                <button class="btn" id="map-to-title" style="padding: 4px 10px; font-size: 0.8rem;">Menu</button>
             </div>
         </div>
-        <button class="btn secondary" onclick="switchScreen('menu')">⬅ Back to Menu</button>
+
+        <div class="map-nodes-container" id="nodes-list">
+            <!-- Dynamic map nodes inserted via JS -->
+        </div>
     </div>
 
-    <!-- SCREEN 3: COMBAT -->
-    <div id="screen-combat" class="screen">
-        <div class="hud">
-            <div class="entity-hud">
-                <div class="stat-labels"><span>🧙‍♂️ You (Lvl <span id="cb-lvl">1</span>)</span><span id="cb-hp-text">100/100</span></div>
-                <div class="stat-bar-container"><div id="cb-hp-bar" class="stat-bar hp-fill"></div></div>
-                <div class="stat-labels" style="margin-top: 5px;"><span>✨ MP</span><span id="cb-mp-text">50/50</span></div>
-                <div class="stat-bar-container"><div id="cb-mp-bar" class="stat-bar mp-fill"></div></div>
-            </div>
-            <div class="entity-hud" style="align-items: flex-end; text-align: right;">
-                <div class="stat-labels"><span id="cb-enemy-name" style="color: var(--accent);">Boss</span><span id="cb-enemy-hp-text">100/100</span></div>
-                <div class="stat-bar-container" style="direction: rtl;"><div id="cb-enemy-hp-bar" class="stat-bar hp-fill"></div></div>
-                <div style="font-size: 0.8rem; margin-top: 5px; color: var(--text-muted);">Questions: <span id="cb-q-count">1/10</span></div>
-            </div>
+    <!-- 3. SANCTUARY & GEAR SCREEN -->
+    <div id="sanctuary-screen" class="screen">
+        <div class="header-bar">
+            <h2>The Codex Sanctuary</h2>
+            <button class="btn" id="sanctuary-to-title" style="padding: 4px 10px; font-size: 0.8rem;">Back</button>
         </div>
 
-        <div class="combat-arena" id="combat-arena">
-            <div class="enemy-sprite" id="enemy-sprite">🐂</div>
+        <div class="sanctuary-grid">
+            <div class="panel-card">
+                <h2>Mathemancer Stats</h2>
+                <div class="item-row"><span>Rank Title:</span> <strong id="sanc-rank" style="color:var(--primary-gold)">Novice Counter</strong></div>
+                <div class="item-row"><span>Total Lifetime EXP:</span> <strong id="sanc-exp">0 EXP</strong></div>
+                <div class="item-row"><span>Highest Battle Score:</span> <strong id="sanc-highscore">0</strong></div>
+                <div class="item-row"><span>Skill Points (SP):</span> <strong id="sanc-sp" style="color:var(--accent-blue)">0 SP</strong></div>
+            </div>
+
+            <div class="panel-card">
+                <h2>Equipment Vault</h2>
+                <div class="item-row">
+                    <div><strong>Abacus Staff</strong><br><small>Base Magic Power (+5 ATK)</small></div>
+                    <button class="btn btn-gold" style="padding:4px 8px; font-size:0.75rem;">Equipped</button>
+                </div>
+                <div class="item-row">
+                    <div><strong>Apprentice Robe</strong><br><small>Basic Shielding (+20 HP)</small></div>
+                    <button class="btn btn-gold" style="padding:4px 8px; font-size:0.75rem;">Equipped</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. COMBAT BATTLE SCREEN -->
+    <div id="battle-screen" class="screen">
+        <div class="header-bar" style="padding: 6px 12px;">
+            <span id="battle-stage-title" style="font-weight: bold; color: var(--primary-gold);">Ch 1: Baron Void</span>
+            <div class="stat-badge">Score: <span id="battle-score">0</span></div>
+        </div>
+
+        <div class="battle-arena">
+            <canvas id="battle-canvas"></canvas>
             
-            <div style="display:flex; flex-direction: column; gap: 15px; width: 100%; align-items: center;">
-                <div class="math-board" id="math-board">
-                    <div class="timer-wrap">
-                        <div class="stat-bar-container" style="height: 8px;"><div id="timer-bar" class="stat-bar timer-fill"></div></div>
-                    </div>
-                    <div style="color: #64748b; font-size: 0.9rem; font-weight: bold; text-transform: uppercase;" id="q-topic">Topic</div>
-                    <div class="question-text" id="question-text">Loading...</div>
+            <!-- Player Sprite & Vitals -->
+            <div class="combatant">
+                <div class="vitals-box">
+                    <div class="vitals-name">Apprentice</div>
+                    <div class="bar-container"><div id="player-hp-bar" class="bar-fill hp-fill"></div></div>
+                    <div class="bar-container"><div id="player-mp-bar" class="bar-fill mp-fill"></div></div>
                 </div>
+                <div class="sprite player-sprite" id="player-sprite-el"></div>
+            </div>
 
-                <div class="answers-grid" id="answers-grid">
-                    <button class="answer-btn" onclick="checkAnswer(0)" id="btn-0">A</button>
-                    <button class="answer-btn" onclick="checkAnswer(1)" id="btn-1">B</button>
-                    <button class="answer-btn" onclick="checkAnswer(2)" id="btn-2">C</button>
-                    <button class="answer-btn" onclick="checkAnswer(3)" id="btn-3">D</button>
+            <!-- Boss Sprite & Vitals -->
+            <div class="combatant">
+                <div class="vitals-box">
+                    <div class="vitals-name" id="boss-name-el">Baron Void</div>
+                    <div class="bar-container"><div id="boss-hp-bar" class="bar-fill hp-fill"></div></div>
                 </div>
+                <div class="sprite boss-sprite" id="boss-sprite-el"></div>
+            </div>
+        </div>
 
-                <div class="combat-controls">
-                    <button class="tool-btn flee-btn" onclick="openMap()">🏃 Flee</button>
-                    <button class="tool-btn hint-btn" onclick="useHint()" id="hint-btn">🦉 Hint (15 MP)</button>
-                </div>
+        <!-- Problem Panel -->
+        <div class="action-panel">
+            <div class="problem-card">
+                <div class="problem-text" id="problem-text-el">Loading magical equation...</div>
+            </div>
+
+            <div class="options-grid" id="options-container">
+                <!-- 4 choice buttons injected here -->
+            </div>
+
+            <div class="battle-controls-row">
+                <button class="btn" id="btn-use-hint" style="font-size: 0.85rem; padding: 6px 12px;">💡 Euclid Hint (-10 MP)</button>
+                <button class="btn" id="btn-open-scratch" style="font-size: 0.85rem; padding: 6px 12px;">✏️ Scratchpad</button>
+                <span style="font-size: 0.85rem; color: var(--text-dim);" id="question-tracker">Q: 1/10</span>
             </div>
         </div>
     </div>
 
-    <!-- OVERLAYS -->
-    <div id="overlay-feedback" class="overlay">
-        <div class="dialog-box">
-            <div class="dialog-title" id="fb-title">🦉 Decimal the Owl says:</div>
-            <div class="dialog-text" id="fb-text">Explanation goes here.</div>
-            <button class="btn" onclick="nextTurn()" style="width: 100%;">Continue</button>
+</div>
+
+<!-- OVERLAY SCRATCHPAD -->
+<div id="scratchpad-overlay">
+    <div class="scratchpad-header">
+        <h3 style="color: var(--primary-gold);">Magical Scratchpad Canvas</h3>
+        <div style="display: flex; gap: 8px;">
+            <button class="btn btn-red" id="btn-clear-scratch" style="padding: 4px 10px; font-size: 0.8rem;">Clear</button>
+            <button class="btn" id="btn-close-scratch" style="padding: 4px 10px; font-size: 0.8rem;">Close</button>
         </div>
     </div>
+    <canvas id="scratch-canvas"></canvas>
+</div>
 
-    <div id="overlay-end" class="overlay">
-        <div class="dialog-box" style="text-align: center;">
-            <h2 id="end-title" style="font-size: 3rem; margin-bottom: 10px;">Victory!</h2>
-            <div id="end-stars" style="font-size: 3rem; color: var(--accent); margin-bottom: 10px; letter-spacing: 10px;">★★★</div>
-            <div class="dialog-text" id="end-stats" style="white-space: pre-wrap;">XP: +50 | Gold: +20</div>
-            <button class="btn" onclick="openMap()" style="width: 100%;">Return to Map</button>
+<!-- MODAL DIALOG (Explanations & Stage Results) -->
+<div class="modal-overlay" id="game-modal">
+    <div class="modal-box">
+        <div class="modal-title" id="modal-title">Spell Miscast!</div>
+        <div id="modal-body" style="font-size: 0.95rem; line-height: 1.4;">
+            <!-- Dynamic modal content -->
         </div>
+        <button class="btn btn-gold" id="modal-primary-btn">Continue</button>
     </div>
 </div>
 
 <script>
-/* ==========================================================================
-   GAME STATE & CONFIGURATION
-   ========================================================================== */
-const DEFAULT_STATE = {
-    level: 1, xp: 0,
-    maxHp: 100, maxMp: 50,
-    gold: 0, stars: 0
-};
-let pState = JSON.parse(localStorage.getItem('magicMathSave')) || { ...DEFAULT_STATE };
+/**
+ * MAGIC MATH - Core Game Engine
+ * Comprehensive Grade 7 Educational RPG Implementation
+ */
 
-const CHAPTERS = [
-    { name: "Minus Minotaur", sprite: "🐂", topic: "Integers", hp: 100 },
-    { name: "Fractured Ent", sprite: "🌳", topic: "Fractions & GCD/LCM", hp: 120 },
-    { name: "Sand-Serpent", sprite: "🐍", topic: "Decimals", hp: 140 },
-    { name: "The Nullifier", sprite: "🕳️", topic: "Linear Equations", hp: 180 }
+// --- 1. SOUND SYNTHESIZER (Web Audio API) ---
+class SoundEngine {
+    constructor() {
+        this.ctx = null;
+    }
+
+    init() {
+        if (!this.ctx) {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+
+    playChime() { // Correct Answer / Positive
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, now); // C5
+        osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.1); // E5
+        osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.2); // G5
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.4);
+    }
+
+    playThud() { // Incorrect Answer / Hit Taken
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(130, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.3);
+        gain.gain.setValueAtTime(0.4, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.3);
+    }
+
+    playSpell() { // Magic Cast
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(300, now);
+        osc.frequency.linearRampToValueAtTime(800, now + 0.2);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.25);
+    }
+}
+
+const audio = new SoundEngine();
+
+// --- 2. GRADE 7 MATHEMATICS QUESTION DATABASE ---
+const QUESTION_BANK = [
+    // Chapter 1: Integers & Absolute Value
+    { ch: 1, q: "Evaluate: (-12) + 7", options: ["-5", "5", "-19", "19"], answer: 0, exp: "When adding a positive to a negative, subtract the absolute values: 12 - 7 = 5. Since -12 has greater magnitude, answer is -5." },
+    { ch: 1, q: "Evaluate: (-8) × (-6)", options: ["48", "-48", "14", "-14"], answer: 0, exp: "Multiplying two negative numbers always yields a positive result: 8 × 6 = 48." },
+    { ch: 1, q: "Calculate: |-15| - |7|", options: ["8", "-8", "22", "-22"], answer: 0, exp: "Absolute value turns negative numbers positive: |-15| = 15, |7| = 7. Thus 15 - 7 = 8." },
+    { ch: 1, q: "Evaluate: (-20) ÷ 4 - (-3)", options: ["-2", "-8", "2", "-5"], answer: 0, exp: "(-20) ÷ 4 = -5. Subtracting -3 is equivalent to adding 3: -5 + 3 = -2." },
+
+    // Chapter 2: Prime Factors, HCF & LCM
+    { ch: 2, q: "What is the Prime Factorization of 60?", options: ["2² × 3 × 5", "2 × 30", "2³ × 5", "4 × 15"], answer: 0, exp: "Decomposing 60 down to primes: 60 = 2 × 30 = 2 × 2 × 15 = 2² × 3 × 5." },
+    { ch: 2, q: "Find the Highest Common Factor (HCF) of 24 and 36.", options: ["12", "6", "72", "4"], answer: 0, exp: "Factors of 24: {1,2,3,4,6,8,12,24}. Factors of 36: {1,2,3,4,6,9,12,18,36}. Greatest shared factor = 12." },
+    { ch: 2, q: "Find the Lowest Common Multiple (LCM) of 8 and 12.", options: ["24", "48", "4", "96"], answer: 0, exp: "Multiples of 8: 8, 16, 24, 32... Multiples of 12: 12, 24, 36... Smallest shared multiple = 24." },
+    { ch: 2, q: "Which of the following is a Prime Number?", options: ["37", "39", "45", "51"], answer: 0, exp: "37 has no divisors other than 1 and itself. (39=3x13, 45=5x9, 51=3x17)." },
+
+    // Chapter 3: Rational Numbers (Fractions/Decimals/Percents)
+    { ch: 3, q: "Convert 3/5 into a percentage.", options: ["60%", "35%", "50%", "75%"], answer: 0, exp: "3 ÷ 5 = 0.60. Multiplying 0.60 by 100 gives 60%." },
+    { ch: 3, q: "Evaluate: 1/4 + 2/3", options: ["11/12", "3/7", "3/12", "5/7"], answer: 0, exp: "Find common denominator (12): 3/12 + 8/12 = 11/12." },
+    { ch: 3, q: "Convert 0.75 into a simplified fraction.", options: ["3/4", "7/5", "75/10", "4/5"], answer: 0, exp: "0.75 = 75/100. Dividing numerator and denominator by 25 yields 3/4." },
+    { ch: 3, q: "Calculate 20% of 150.", options: ["30", "20", "25", "15"], answer: 0, exp: "20% = 0.20. 0.20 × 150 = 30." },
+
+    // Chapter 4: Linear Equations
+    { ch: 4, q: "Solve for x: x + 9 = -4", options: ["x = -13", "x = 5", "x = -5", "x = 13"], answer: 0, exp: "Subtract 9 from both sides: x = -4 - 9 = -13." },
+    { ch: 4, q: "Solve for x: 3x - 5 = 16", options: ["x = 7", "x = 3.6", "x = 21", "x = 9"], answer: 0, exp: "Add 5 to both sides: 3x = 21. Divide by 3: x = 7." },
+    { ch: 4, q: "Simplify: 4x + 7 - 2x + 3", options: ["2x + 10", "6x + 10", "2x + 4", "12x"], answer: 0, exp: "Combine like terms: (4x - 2x) + (7 + 3) = 2x + 10." },
+    { ch: 4, q: "Solve for x: 2(x + 4) = 18", options: ["x = 5", "x = 7", "x = 9", "x = 13"], answer: 0, exp: "Expand bracket: 2x + 8 = 18. Subtract 8: 2x = 10. Divide by 2: x = 5." },
+
+    // Chapter 5: Grand Review
+    { ch: 5, q: "Evaluate: (-3)² + |-10| ÷ 2", options: ["14", "11", "-4", "8"], answer: 0, exp: "(-3)² = 9. |-10| = 10. 10 ÷ 2 = 5. 9 + 5 = 14." },
+    { ch: 5, q: "A robe costs 200 Gold. You get a 15% discount. What is the final price?", options: ["170 Gold", "185 Gold", "30 Gold", "150 Gold"], answer: 0, exp: "15% of 200 = 30 Gold discount. Final price = 200 - 30 = 170 Gold." }
 ];
 
-let cState = { // Combat State
-    chapterId: 0,
-    questions: [],
-    qIndex: 0,
-    enemyHp: 100,
-    enemyMaxHp: 100,
-    hp: 100, mp: 50,
-    timer: null,
-    timeLeft: 20,
-    correctIdx: -1,
-    isProcessing: false,
-    correctCount: 0
+// --- 3. GAME STATE MANAGEMENT ---
+const CHAPTERS = [
+    { id: 1, name: "The Frigid Abyss", boss: "Baron Void", topic: "Integers & Absolute Value" },
+    { id: 2, name: "The Crystal Crags", boss: "Prime Behemoth", topic: "Factors, LCM & Primes" },
+    { id: 3, name: "The Prism Ponds", boss: "Decima Shapeshifter", topic: "Rational Numbers & Percents" },
+    { id: 4, name: "The Shifting Ruins", boss: "Lord Variable", topic: "Linear Equations" },
+    { id: 5, name: "The Chaos Citadel", boss: "The Chaos Vector", topic: "Comprehensive Realm Core" }
+];
+
+let gameState = {
+    exp: 0,
+    gold: 50,
+    stars: [0, 0, 0, 0, 0],
+    highScore: 0,
+    sp: 0
 };
 
-/* ==========================================================================
-   AUDIO ENGINE (Web Audio API)
-   ========================================================================== */
-const Audio = (function() {
-    let ctx = null;
-    let enabled = false;
-
-    function init() {
+function loadSavedData() {
+    const data = localStorage.getItem("magic_math_save_v1");
+    if (data) {
         try {
-            if(!ctx) {
-                ctx = new (window.AudioContext || window.webkitAudioContext)();
-                enabled = true;
-            }
-            if(ctx && ctx.state === 'suspended') ctx.resume();
-        } catch(e) {
-            enabled = false;
-        }
+            gameState = Object.assign(gameState, JSON.parse(data));
+        } catch(e) {}
     }
-
-    function playTone(freq, type, duration, vol=0.1) {
-        if(!enabled || !ctx) return;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, ctx.currentTime);
-        gain.gain.setValueAtTime(vol, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + duration);
-    }
-
-    return {
-        init,
-        click: () => playTone(600, 'sine', 0.1, 0.1),
-        correct: () => { playTone(523.25, 'sine', 0.1, 0.1); setTimeout(()=>playTone(659.25, 'sine', 0.2, 0.15), 100); },
-        wrong: () => playTone(150, 'sawtooth', 0.3, 0.15),
-        damage: () => playTone(100, 'square', 0.2, 0.2),
-        hit: () => playTone(800, 'square', 0.1, 0.1)
-    };
-})();
-
-/* ==========================================================================
-   QUESTION GENERATOR (Grade 7 Mathayom 1 Sem 1)
-   ========================================================================== */
-const Rand = {
-    int: (min, max) => Math.floor(Math.random() * (max - min + 1)) + min,
-    pick: (arr) => arr[Math.floor(Math.random() * arr.length)],
-    shuffle: (arr) => {
-        for(let i=arr.length-1; i>0; i--){
-            const j=Math.floor(Math.random()*(i+1));
-            [arr[i], arr[j]]=[arr[j], arr[i]];
-        }
-        return arr;
-    }
-};
-
-const MathGen = {
-    makeDistractors: (ans, type, range=5) => {
-        let opts = new Set([ans]);
-        let attempts = 0;
-        
-        // Prevent infinite loops with attempts limit
-        while(opts.size < 4 && attempts < 50) {
-            let offset = Rand.int(-range, range);
-            if(offset===0) offset=1;
-            
-            if(type === 'int') opts.add(ans + offset);
-            else if(type === 'dec') opts.add(Math.round((ans + offset*0.1)*10)/10);
-            else if(type === 'frac') opts.add(ans + offset);
-            attempts++;
-        }
-        
-        // Safety fallback to guarantee 4 options
-        let fallback = 1;
-        while(opts.size < 4) {
-            opts.add(type === 'dec' ? Math.round((ans + fallback*0.1)*10)/10 : ans + fallback);
-            fallback++;
-        }
-        
-        return Array.from(opts).slice(0, 4);
-    },
-    ch0_Integers: () => {
-        const op = Rand.pick(['+','-','*']);
-        let a, b, ans, exp;
-        if(op === '+') {
-            a = Rand.int(-20, 20); b = Rand.int(-20, 20); ans = a + b;
-            exp = `When adding integers, if signs differ, subtract the smaller absolute value from the larger and keep the sign of the larger.`;
-        } else if(op === '-') {
-            a = Rand.int(-20, 20); b = Rand.int(-20, 20); ans = a - b;
-            exp = `Subtracting an integer is the same as adding its opposite: ${a} - (${b}) = ${a} + (${-b}).`;
-        } else {
-            a = Rand.int(-12, 12); b = Rand.int(-12, 12); ans = a * b;
-            exp = `Multiplying integers: same signs = positive result, different signs = negative result.`;
-        }
-        let bStr = b < 0 ? `(${b})` : b;
-        let opts = MathGen.makeDistractors(ans, 'int');
-        if(op==='*') opts[1] = -ans; // Common sign mistake as distractor
-        return { q: `${a} ${op} ${bStr} = ?`, ans: ans.toString(), opts: Rand.shuffle(opts.map(String)), exp, topic: "Integers" };
-    },
-    ch1_Fractions: () => {
-        const type = Rand.pick(['gcd', 'lcm', 'add']);
-        const getGcd = (x, y) => y === 0 ? x : getGcd(y, x % y);
-
-        if(type==='gcd') {
-            let gcd = Rand.int(2,8); let a = gcd * Rand.int(2,5); let b = gcd * Rand.int(2,6);
-            if(a===b) b += gcd;
-            let realGcd = getGcd(a, b);
-            let opts = MathGen.makeDistractors(realGcd, 'int');
-            return { q: `Find GCD of ${a} & ${b}`, ans: realGcd.toString(), opts: Rand.shuffle(opts.map(String)), exp: `The Greatest Common Divisor is the largest number that divides both evenly.`, topic: "GCD" };
-        } else if (type==='lcm') {
-            let a = Rand.int(3,8); let b = Rand.int(4,10);
-            let gcdVal = getGcd(a, b);
-            let lcm = Math.abs(a*b)/gcdVal;
-            let opts = MathGen.makeDistractors(lcm, 'int', 10);
-            return { q: `Find LCM of ${a} & ${b}`, ans: lcm.toString(), opts: Rand.shuffle(opts.map(String)), exp: `The Least Common Multiple is the smallest number that is a multiple of both.`, topic: "LCM" };
-        } else {
-            let den = Rand.pick([2,3,4,5]); let n1 = Rand.int(1, den*2); let n2 = Rand.int(1, den*2);
-            let ans = n1+n2;
-            let opts = MathGen.makeDistractors(ans, 'frac').map(x => `${x}/${den}`);
-            return { q: `${n1}/${den} + ${n2}/${den} = ?`, ans: `${ans}/${den}`, opts: Rand.shuffle(opts), exp: `To add fractions with the same denominator, add the numerators and keep the denominator.`, topic: "Fractions" };
-        }
-    },
-    ch2_Decimals: () => {
-        const op = Rand.pick(['+','-']);
-        let a = Rand.int(10, 99) / 10;
-        let b = Rand.int(10, 99) / 10;
-        let ans = op === '+' ? (a*10 + b*10)/10 : (a*10 - b*10)/10;
-        let opts = MathGen.makeDistractors(ans, 'dec');
-        return { q: `${a.toFixed(1)} ${op} ${b.toFixed(1)} = ?`, ans: ans.toFixed(1), opts: Rand.shuffle(opts.map(x=>x.toFixed(1))), exp: `Align the decimal points when adding or subtracting decimals.`, topic: "Decimals" };
-    },
-    ch3_Equations: () => {
-        let ans = Rand.int(-5, 10);
-        let a = Rand.int(2, 6);
-        let b = Rand.int(-10, 15);
-        let c = a * ans + b;
-        let bStr = b < 0 ? `- ${Math.abs(b)}` : `+ ${b}`;
-        let opts = MathGen.makeDistractors(ans, 'int');
-        return { q: `${a}x ${bStr} = ${c}. Find x.`, ans: ans.toString(), opts: Rand.shuffle(opts.map(String)), exp: `Isolate x: First undo addition/subtraction, then divide by the coefficient (${a}).`, topic: "Algebra" };
-    }
-};
-
-function generateQuestions(chapterId) {
-    let qs = [];
-    for(let i=0; i<10; i++) {
-        if(chapterId === 0) qs.push(MathGen.ch0_Integers());
-        else if(chapterId === 1) qs.push(MathGen.ch1_Fractions());
-        else if(chapterId === 2) qs.push(MathGen.ch2_Decimals());
-        else if(chapterId === 3) qs.push(MathGen.ch3_Equations());
-    }
-    return qs;
 }
 
-/* ==========================================================================
-   CORE LOGIC & UI UPDATES
-   ========================================================================== */
-function saveGame() { localStorage.setItem('magicMathSave', JSON.stringify(pState)); }
-function resetSave() { 
-    if(confirm("Reset all progress?")) { pState = { ...DEFAULT_STATE }; saveGame(); updateMenuUI(); }
+function saveData() {
+    localStorage.setItem("magic_math_save_v1", JSON.stringify(gameState));
 }
-function getRank(stars) {
-    if(stars<10) return "Novice"; if(stars<25) return "Apprentice";
-    if(stars<50) return "Spellcaster"; if(stars<100) return "Grandmaster";
-    return "Mathemagician";
-}
-function getReqXp(lvl) { return lvl * 100; }
 
-function switchScreen(id) {
-    // Hide all screens and overlays to prevent overlapping (ซ้อน)
+function getRankTitle(exp) {
+    if (exp < 500) return "Novice Counter";
+    if (exp < 2000) return "Equation Apprentice";
+    if (exp < 5000) return "Factor Finder";
+    if (exp < 10000) return "Algebra Knight";
+    if (exp < 20000) return "Matrix Master";
+    return "Arch-Mathemancer";
+}
+
+// --- 4. SCREEN NAVIGATION ---
+function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.overlay').forEach(o => o.classList.remove('active'));
-    
-    document.getElementById(`screen-${id}`).classList.add('active');
-    Audio.init();
+    document.getElementById(screenId).classList.add('active');
+    updateUI();
 }
 
-function updateMenuUI() {
-    pState.maxHp = 100 + (pState.level - 1)*20;
-    pState.maxMp = 50 + (pState.level - 1)*10;
-    pState.rank = getRank(pState.stars);
+function updateUI() {
+    const rank = getRankTitle(gameState.exp);
+    document.getElementById('title-rank-display').textContent = `Rank: ${rank}`;
+    document.getElementById('map-player-rank').textContent = rank;
+    document.getElementById('map-gold').textContent = gameState.gold;
     
-    document.getElementById('menu-lvl').innerText = pState.level;
-    document.getElementById('menu-rank').innerText = pState.rank;
-    document.getElementById('menu-stars').innerText = pState.stars;
-    document.getElementById('menu-gold').innerText = pState.gold;
-    
-    let reqXp = getReqXp(pState.level);
-    document.getElementById('menu-xp-text').innerText = `${pState.xp}/${reqXp}`;
-    document.getElementById('menu-xp-bar').style.width = `${(pState.xp / reqXp)*100}%`;
+    const totalStars = gameState.stars.reduce((a,b) => a+b, 0);
+    document.getElementById('map-total-stars').textContent = totalStars;
+
+    // Sanctuary updates
+    document.getElementById('sanc-rank').textContent = rank;
+    document.getElementById('sanc-exp').textContent = `${gameState.exp} EXP`;
+    document.getElementById('sanc-highscore').textContent = gameState.highScore;
+    document.getElementById('sanc-sp').textContent = `${gameState.sp} SP`;
+
+    renderMapNodes();
 }
 
-function openMap() {
-    Audio.click(); 
-    updateMenuUI(); 
-    switchScreen('map');
-    clearInterval(cState.timer);
+function renderMapNodes() {
+    const container = document.getElementById('nodes-list');
+    container.innerHTML = '';
+
+    CHAPTERS.forEach((ch, idx) => {
+        const isLocked = idx > 0 && gameState.stars[idx - 1] === 0;
+        const node = document.createElement('div');
+        node.className = `chapter-node ${isLocked ? 'locked' : ''}`;
+        
+        let starStr = '⭐'.repeat(gameState.stars[idx]) + '☆'.repeat(3 - gameState.stars[idx]);
+        
+        node.innerHTML = `
+            <div class="node-info">
+                <h3>Ch ${ch.id}: ${ch.name}</h3>
+                <p>Boss: ${ch.boss} | ${ch.topic}</p>
+            </div>
+            <div class="stars-container">${isLocked ? '🔒' : starStr}</div>
+        `;
+
+        if (!isLocked) {
+            node.addEventListener('click', () => startBattle(ch.id));
+        }
+        container.appendChild(node);
+    });
 }
 
-/* ==========================================================================
-   COMBAT SYSTEM
-   ========================================================================== */
-function startLevel(chapId) {
-    Audio.click();
-    const boss = CHAPTERS[chapId];
-    cState = {
-        chapterId: chapId,
-        questions: generateQuestions(chapId),
-        qIndex: 0, correctCount: 0,
-        enemyMaxHp: boss.hp, enemyHp: boss.hp,
-        hp: pState.maxHp, mp: pState.maxMp,
-        isProcessing: false, timeLeft: 20
+// --- 5. COMBAT & QUESTION ENGINE ---
+let currentBattle = null;
+
+function startBattle(chapterId) {
+    audio.init();
+    const chData = CHAPTERS.find(c => c.id === chapterId);
+    
+    // Filter & randomize questions
+    let pool = QUESTION_BANK.filter(q => q.ch === chapterId || chapterId === 5);
+    if (pool.length < 5) pool = QUESTION_BANK; // fallback
+    
+    // Shuffle pool
+    pool = [...pool].sort(() => Math.random() - 0.5).slice(0, 10);
+
+    currentBattle = {
+        chapterId: chapterId,
+        chapterData: chData,
+        questions: pool,
+        qIndex: 0,
+        playerHP: 100,
+        playerMaxHP: 100,
+        playerMP: 50,
+        playerMaxMP: 50,
+        bossHP: 100,
+        bossMaxHP: 100,
+        score: 0,
+        correctCount: 0
     };
+
+    document.getElementById('battle-stage-title').textContent = `Ch ${chData.id}: ${chData.boss}`;
+    document.getElementById('boss-name-el').textContent = chData.boss;
     
-    document.getElementById('cb-enemy-name').innerText = boss.name;
-    document.getElementById('enemy-sprite').innerText = boss.sprite;
-    document.getElementById('cb-lvl').innerText = pState.level;
-    
-    updateCombatHUD();
-    switchScreen('combat');
-    loadQuestion();
+    showScreen('battle-screen');
+    renderQuestion();
+    updateBattleVitals();
 }
 
-function updateCombatHUD() {
-    document.getElementById('cb-hp-text').innerText = `${cState.hp}/${pState.maxHp}`;
-    document.getElementById('cb-hp-bar').style.width = `${(cState.hp/pState.maxHp)*100}%`;
-    document.getElementById('cb-mp-text').innerText = `${cState.mp}/${pState.maxMp}`;
-    document.getElementById('cb-mp-bar').style.width = `${(cState.mp/pState.maxMp)*100}%`;
+function updateBattleVitals() {
+    if (!currentBattle) return;
+    const b = currentBattle;
     
-    document.getElementById('cb-enemy-hp-text').innerText = `${cState.enemyHp}/${cState.enemyMaxHp}`;
-    document.getElementById('cb-enemy-hp-bar').style.width = `${(cState.enemyHp/cState.enemyMaxHp)*100}%`;
-    
-    document.getElementById('hint-btn').disabled = cState.mp < 15;
+    document.getElementById('player-hp-bar').style.width = `${(b.playerHP / b.playerMaxHP) * 100}%`;
+    document.getElementById('player-mp-bar').style.width = `${(b.playerMP / b.playerMaxMP) * 100}%`;
+    document.getElementById('boss-hp-bar').style.width = `${(b.bossHP / b.bossMaxHP) * 100}%`;
+    document.getElementById('battle-score').textContent = b.score;
+    document.getElementById('question-tracker').textContent = `Q: ${b.qIndex + 1}/${b.questions.length}`;
 }
 
-function loadQuestion() {
-    if(cState.qIndex >= 10 || cState.enemyHp <= 0 || cState.hp <= 0) {
-        endCombat(); return;
-    }
-    
-    cState.isProcessing = false;
-    let q = cState.questions[cState.qIndex];
-    document.getElementById('cb-q-count').innerText = `${cState.qIndex + 1}/10`;
-    document.getElementById('q-topic').innerText = q.topic;
-    document.getElementById('question-text').innerText = q.q;
-    
-    for(let i=0; i<4; i++) {
-        let btn = document.getElementById(`btn-${i}`);
-        btn.innerText = q.opts[i];
-        btn.className = 'answer-btn';
-        if(q.opts[i] === q.ans) cState.correctIdx = i;
-    }
-    
-    cState.timeLeft = 20;
-    startTimer();
+function renderQuestion() {
+    if (!currentBattle) return;
+    const b = currentBattle;
+    const q = b.questions[b.qIndex];
+
+    document.getElementById('problem-text-el').textContent = q.q;
+
+    // Create choices with shuffled display
+    const container = document.getElementById('options-container');
+    container.innerHTML = '';
+
+    // Create choice objects
+    let choices = q.options.map((text, idx) => ({ text, isCorrect: idx === q.answer }));
+    choices.sort(() => Math.random() - 0.5); // Shuffle options
+
+    choices.forEach(choice => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.textContent = choice.text;
+        btn.addEventListener('click', () => handleAnswer(choice.isCorrect, q));
+        container.appendChild(btn);
+    });
 }
 
-function startTimer() {
-    clearInterval(cState.timer);
-    let tb = document.getElementById('timer-bar');
-    cState.timer = setInterval(() => {
-        cState.timeLeft -= 0.1;
-        let pct = (cState.timeLeft / 20) * 100;
-        tb.style.width = `${pct}%`;
-        if(pct < 25) tb.style.background = 'linear-gradient(90deg, #f43f5e, #be123c)';
-        else tb.style.background = 'linear-gradient(90deg, var(--accent), #fbbf24)';
-        
-        if(cState.timeLeft <= 0) {
-            clearInterval(cState.timer);
-            processAnswer(-1); // Timeout
-        }
-    }, 100);
-}
-
-function checkAnswer(idx) {
-    if(cState.isProcessing) return;
-    processAnswer(idx);
-}
-
-function processAnswer(idx) {
-    cState.isProcessing = true;
-    clearInterval(cState.timer);
-    let q = cState.questions[cState.qIndex];
-    
-    document.getElementById(`btn-${cState.correctIdx}`).classList.add('correct');
-    
-    if(idx === cState.correctIdx) {
-        // CORRECT
-        Audio.correct();
-        cState.correctCount++;
-        let dmg = Math.ceil(cState.enemyMaxHp / 10);
-        cState.enemyHp = Math.max(0, cState.enemyHp - dmg);
-        showDmgText(`-${dmg}`, 'enemy-sprite', '#10b981');
-        document.getElementById('enemy-sprite').style.animation = 'shake 0.4s';
-        setTimeout(() => { document.getElementById('enemy-sprite').style.animation = 'float 3s ease-in-out infinite'; }, 400);
-        
-        updateCombatHUD();
-        setTimeout(() => { cState.qIndex++; loadQuestion(); }, 1200);
-        
-    } else {
-        // WRONG / TIMEOUT
-        Audio.wrong();
-        if(idx !== -1) document.getElementById(`btn-${idx}`).classList.add('wrong');
-        
-        let pDmg = Math.ceil(pState.maxHp * 0.15); // 15% max hp damage
-        cState.hp = Math.max(0, cState.hp - pDmg);
-        showDmgText(`-${pDmg}`, 'combat-arena', '#ef4444');
-        document.getElementById('combat-arena').style.animation = 'shake 0.4s';
-        setTimeout(() => { document.getElementById('combat-arena').style.animation = ''; }, 400);
-        
-        updateCombatHUD();
-        
-        setTimeout(() => {
-            document.getElementById('fb-title').innerHTML = idx === -1 ? '⏳ Time Out!' : '🦉 Decimal the Owl says:';
-            document.getElementById('fb-text').innerText = q.exp;
-            document.getElementById('overlay-feedback').classList.add('active');
-        }, 1000);
-    }
-}
-
-function nextTurn() {
-    Audio.click();
-    document.getElementById('overlay-feedback').classList.remove('active');
-    if(cState.hp <= 0) endCombat();
-    else { cState.qIndex++; loadQuestion(); }
-}
-
-function useHint() {
-    if(cState.mp < 15 || cState.isProcessing) return;
-    Audio.click();
-    cState.mp -= 15;
-    updateCombatHUD();
-    
-    let hidden = 0;
-    let opts = [0,1,2,3];
-    Rand.shuffle(opts);
-    for(let i of opts) {
-        if(i !== cState.correctIdx && hidden < 2) {
-            document.getElementById(`btn-${i}`).classList.add('disabled');
-            document.getElementById(`btn-${i}`).innerText = '';
-            hidden++;
-        }
-    }
-}
-
-function showDmgText(text, parentId, color) {
-    const parent = document.getElementById(parentId);
+function spawnFloatingText(text, color, targetEl) {
+    const rect = targetEl.getBoundingClientRect();
     const el = document.createElement('div');
     el.className = 'dmg-text';
-    el.innerText = text;
     el.style.color = color;
-    if(parentId==='combat-arena') { el.style.top='10%'; el.style.left='20%'; }
-    else { el.style.top='-20%'; el.style.left='50%'; el.style.transform='translateX(-50%)'; }
-    parent.appendChild(el);
-    setTimeout(() => el.remove(), 1000);
+    el.style.left = `${rect.left + rect.width / 2}px`;
+    el.style.top = `${rect.top}px`;
+    el.textContent = text;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 800);
 }
 
-function endCombat() {
-    let win = cState.enemyHp <= 0;
-    document.getElementById('overlay-end').classList.add('active');
-    let title = document.getElementById('end-title');
-    let starsEl = document.getElementById('end-stars');
-    let stats = document.getElementById('end-stats');
-    
-    if(win) {
-        Audio.correct();
-        title.innerText = "Boss Defeated!";
-        title.style.color = "var(--correct)";
+function handleAnswer(isCorrect, questionObj) {
+    if (!currentBattle) return;
+    const b = currentBattle;
+
+    if (isCorrect) {
+        audio.playChime();
+        audio.playSpell();
         
-        let stars = 1;
-        if(cState.correctCount >= 8) stars = 2;
-        if(cState.correctCount === 10) stars = 3;
+        b.correctCount++;
+        b.score += 100;
+        b.playerMP = Math.min(b.playerMaxMP, b.playerMP + 10);
         
-        starsEl.innerText = "★".repeat(stars) + "☆".repeat(3-stars);
-        
-        let xpGained = stars * 40 + (cState.chapterId * 10);
-        let goldGained = stars * 15;
-        
-        stats.innerText = `XP: +${xpGained} | Gold: +${goldGained}\nAccuracy: ${cState.correctCount}/10`;
-        
-        pState.xp += xpGained;
-        pState.gold += goldGained;
-        pState.stars += stars;
-        
-        let req = getReqXp(pState.level);
-        if(pState.xp >= req) {
-            pState.level++;
-            pState.xp -= req;
-            stats.innerText += `\n🌟 LEVEL UP! 🌟`;
-        }
+        // Damage Boss
+        const dmg = 20;
+        b.bossHP = Math.max(0, b.bossHP - dmg);
+        spawnFloatingText(`-${dmg}`, '#ffd700', document.getElementById('boss-sprite-el'));
+
+        nextQuestionOrFinish();
     } else {
-        Audio.damage();
-        title.innerText = "Defeated...";
-        title.style.color = "var(--wrong)";
-        starsEl.innerText = "☆☆☆";
-        stats.innerText = `Keep practicing and try again!\nAccuracy: ${cState.correctCount}/${cState.qIndex}`;
+        audio.playThud();
+        
+        // Player takes damage
+        const dmg = 15;
+        b.playerHP = Math.max(0, b.playerHP - dmg);
+        spawnFloatingText(`-${dmg}`, '#ff4757', document.getElementById('player-sprite-el'));
+
+        // Show Explanation Modal
+        showModal(
+            "Spell Miscast!",
+            `<div style="margin-bottom:10px;">The chaotic forces countered your spell.</div>
+             <div class="explanation-box"><strong>Explanation:</strong><br>${questionObj.exp}</div>`,
+            () => {
+                closeModal();
+                if (b.playerHP <= 0) {
+                    finishBattle(false);
+                } else {
+                    nextQuestionOrFinish();
+                }
+            }
+        );
     }
-    saveGame();
+
+    updateBattleVitals();
 }
 
-// Init
-window.onload = () => { updateMenuUI(); };
+function nextQuestionOrFinish() {
+    const b = currentBattle;
+    if (b.bossHP <= 0 || b.qIndex >= b.questions.length - 1) {
+        finishBattle(b.bossHP <= 0 || b.correctCount >= 5);
+    } else {
+        b.qIndex++;
+        renderQuestion();
+        updateBattleVitals();
+    }
+}
+
+function finishBattle(isVictory) {
+    const b = currentBattle;
+    
+    if (isVictory) {
+        let earnedStars = 1;
+        if (b.correctCount >= 7) earnedStars = 2;
+        if (b.correctCount === 10) earnedStars = 3;
+
+        const idx = b.chapterId - 1;
+        gameState.stars[idx] = Math.max(gameState.stars[idx], earnedStars);
+        
+        const expGained = b.score;
+        const goldGained = Math.floor(b.score / 2);
+        
+        gameState.exp += expGained;
+        gameState.gold += goldGained;
+        if (b.score > gameState.highScore) gameState.highScore = b.score;
+        gameState.sp += 1;
+
+        saveData();
+
+        showModal(
+            "VICTORY!",
+            `<div style="color:var(--primary-gold); font-size:1.2rem; margin-bottom:10px;">Chapter Cleared!</div>
+             <div>Earned: ⭐ ${earnedStars} Stars</div>
+             <div>Rewards: +${expGained} EXP | +${goldGained} Mana Stones</div>`,
+            () => {
+                closeModal();
+                showScreen('map-screen');
+            }
+        );
+    } else {
+        showModal(
+            "DEFEAT",
+            `<div style="color:var(--accent-red); margin-bottom:10px;">The Chaos Vector overwhelmed your mana barriers.</div>
+             <div>Study the Codex and try again!</div>`,
+            () => {
+                closeModal();
+                showScreen('map-screen');
+            }
+        );
+    }
+}
+
+// --- 6. HINT & SCRATCHPAD ---
+document.getElementById('btn-use-hint').addEventListener('click', () => {
+    if (!currentBattle) return;
+    const b = currentBattle;
+
+    if (b.playerMP < 10) {
+        spawnFloatingText("Not enough MP!", "#ff4757", document.getElementById('btn-use-hint'));
+        return;
+    }
+
+    b.playerMP -= 10;
+    updateBattleVitals();
+
+    // Disable 2 incorrect buttons
+    const container = document.getElementById('options-container');
+    const buttons = Array.from(container.children);
+    const q = b.questions[b.qIndex];
+
+    let disabledCount = 0;
+    buttons.forEach(btn => {
+        if (btn.textContent !== q.options[q.answer] && disabledCount < 2 && !btn.disabled) {
+            btn.disabled = true;
+            btn.style.opacity = "0.2";
+            disabledCount++;
+        }
+    });
+});
+
+// Scratchpad Canvas Logic
+const scratchOverlay = document.getElementById('scratchpad-overlay');
+const scratchCanvas = document.getElementById('scratch-canvas');
+const scratchCtx = scratchCanvas.getContext('2d');
+let isDrawing = false;
+
+function resizeScratchCanvas() {
+    scratchCanvas.width = scratchCanvas.clientWidth;
+    scratchCanvas.height = scratchCanvas.clientHeight;
+    scratchCtx.strokeStyle = "#1d1833";
+    scratchCtx.lineWidth = 3;
+    scratchCtx.lineCap = "round";
+}
+
+document.getElementById('btn-open-scratch').addEventListener('click', () => {
+    scratchOverlay.classList.add('active');
+    resizeScratchCanvas();
+});
+
+document.getElementById('btn-close-scratch').addEventListener('click', () => {
+    scratchOverlay.classList.remove('active');
+});
+
+document.getElementById('btn-clear-scratch').addEventListener('click', () => {
+    scratchCtx.clearRect(0, 0, scratchCanvas.width, scratchCanvas.height);
+});
+
+scratchCanvas.addEventListener('pointerdown', (e) => {
+    isDrawing = true;
+    scratchCtx.beginPath();
+    const rect = scratchCanvas.getBoundingClientRect();
+    scratchCtx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+});
+
+scratchCanvas.addEventListener('pointermove', (e) => {
+    if (!isDrawing) return;
+    const rect = scratchCanvas.getBoundingClientRect();
+    scratchCtx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+    scratchCtx.stroke();
+});
+
+scratchCanvas.addEventListener('pointerup', () => isDrawing = false);
+
+// --- 7. MODAL DIALOG CONTROLLER ---
+function showModal(title, htmlBody, onConfirm) {
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-body').innerHTML = htmlBody;
+    
+    const btn = document.getElementById('modal-primary-btn');
+    btn.onclick = onConfirm;
+    
+    document.getElementById('game-modal').classList.add('active');
+}
+
+function closeModal() {
+    document.getElementById('game-modal').classList.remove('active');
+}
+
+// --- 8. INITIALIZATION & EVENT BINDINGS ---
+document.getElementById('btn-start-game').addEventListener('click', () => {
+    audio.init();
+    showScreen('map-screen');
+});
+
+document.getElementById('btn-open-sanctuary').addEventListener('click', () => showScreen('sanctuary-screen'));
+document.getElementById('map-to-title').addEventListener('click', () => showScreen('title-screen'));
+document.getElementById('sanctuary-to-title').addEventListener('click', () => showScreen('title-screen'));
+
+// Window resize handler
+window.addEventListener('resize', () => {
+    if (scratchOverlay.classList.contains('active')) {
+        resizeScratchCanvas();
+    }
+});
+
+// Boot Game
+loadSavedData();
+updateUI();
 </script>
 </body>
 </html>
